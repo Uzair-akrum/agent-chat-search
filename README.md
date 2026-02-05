@@ -21,7 +21,7 @@ A unified search capability across multiple CLI coding agent chat histories. Sto
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/agent-chat-search.git
+git clone https://github.com/Uzair-akrum/agent-chat-search.git
 cd agent-chat-search
 
 # Install dependencies
@@ -247,7 +247,7 @@ Position: assistant message 15/42 (36% through session)
 
 ## 📄 License
 
-MIT © [Your Name](https://github.com/yourusername)
+MIT © [Uzair Akram](https://github.com/Uzair-akrum)
 
 ## 🙏 Acknowledgments
 

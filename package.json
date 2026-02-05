@@ -25,16 +25,16 @@
     "cli",
     "tool"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Uzair Akram <uzair.akram@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/agent-chat-search.git"
+    "url": "https://github.com/Uzair-akrum/agent-chat-search.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/agent-chat-search/issues"
+    "url": "https://github.com/Uzair-akrum/agent-chat-search/issues"
   },
-  "homepage": "https://github.com/yourusername/agent-chat-search#readme",
+  "homepage": "https://github.com/Uzair-akrum/agent-chat-search#readme",
   "dependencies": {
     "commander": "^12.0.0"
   },

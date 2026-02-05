@@ -6,7 +6,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ```bash
 # Fork and clone
-git clone https://github.com/yourusername/agent-chat-search.git
+git clone https://github.com/Uzair-akrum/agent-chat-search.git
 cd agent-chat-search
 
 # Install dependencies
