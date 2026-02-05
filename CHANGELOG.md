@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.1
+
+### Patch Changes
+
+- c0a5867: Initial release with npm publishing setup
+  - Add Prettier configuration and format all code
+  - Add Vitest testing framework with comprehensive tests
+  - Set up GitHub Actions CI workflow
+  - Configure Changesets for versioning and publishing
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
