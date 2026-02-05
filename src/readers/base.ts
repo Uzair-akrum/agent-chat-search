@@ -2,13 +2,21 @@
  * Base abstract class for agent readers
  */
 
-import type { AgentType, Session, Message, SearchMatch, MessageRole, SnippetConfig, TruncationMetadata } from '../types.js';
+import type {
+  AgentType,
+  Session,
+  Message,
+  SearchMatch,
+  MessageRole,
+  SnippetConfig,
+  TruncationMetadata,
+} from '../types.js';
 import { extractTextContent } from '../lib/content.js';
 import {
   extractMultiMatchSnippet,
   applyContentLimit,
   generateSessionSummary,
-  DEFAULT_SNIPPET_CONFIG
+  DEFAULT_SNIPPET_CONFIG,
 } from '../lib/snippet.js';
 
 /**
@@ -40,7 +48,10 @@ export abstract class BaseAgentReader {
   /**
    * Read a specific session by ID
    */
-  abstract readSession(sessionId: string, additionalContext?: any): Promise<Session | null>;
+  abstract readSession(
+    sessionId: string,
+    additionalContext?: any,
+  ): Promise<Session | null>;
 
   /**
    * Search through all messages matching the query
@@ -61,7 +72,7 @@ export abstract class BaseAgentReader {
     snippetConfig?: SnippetConfig,
     literal?: boolean,
     since?: Date,
-    before?: Date
+    before?: Date,
   ): Promise<SearchMatch[]> {
     let sessions = await this.findSessions(workDirFilter);
     this.lastSearchedSessions = sessions.length;
@@ -69,10 +80,10 @@ export abstract class BaseAgentReader {
 
     // Filter sessions by date range
     if (since) {
-      sessions = sessions.filter(s => s.timestamp >= since);
+      sessions = sessions.filter((s) => s.timestamp >= since);
     }
     if (before) {
-      sessions = sessions.filter(s => s.timestamp <= before);
+      sessions = sessions.filter((s) => s.timestamp <= before);
     }
 
     // Merge with default config
@@ -87,7 +98,7 @@ export abstract class BaseAgentReader {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `Invalid regex pattern "${query}": ${msg}. Use --literal for plain text search.`
+        `Invalid regex pattern "${query}": ${msg}. Use --literal for plain text search.`,
       );
     }
 
@@ -114,9 +125,9 @@ export abstract class BaseAgentReader {
         while ((regexMatch = regex.exec(content)) !== null) {
           matchPositions.push({
             start: regexMatch.index,
-            end: regexMatch.index + regexMatch[0].length
+            end: regexMatch.index + regexMatch[0].length,
           });
-          
+
           // Prevent infinite loop on zero-length matches
           if (regexMatch[0].length === 0) {
             regex.lastIndex++;
@@ -136,7 +147,11 @@ export abstract class BaseAgentReader {
             }
 
             // Get context after
-            for (let j = i + 1; j < Math.min(messages.length, i + 1 + contextLines); j++) {
+            for (
+              let j = i + 1;
+              j < Math.min(messages.length, i + 1 + contextLines);
+              j++
+            ) {
               contextAfter.push(messages[j]);
             }
           }
@@ -146,31 +161,42 @@ export abstract class BaseAgentReader {
           let truncation: TruncationMetadata | undefined;
           let finalMatchPositions = matchPositions;
 
-          if (config.mode === 'snippet' && content.length > config.snippetSize * 2) {
+          if (
+            config.mode === 'snippet' &&
+            content.length > config.snippetSize * 2
+          ) {
             // Extract snippet around matches
-            const { snippet, metadata, matchPositions: adjustedPositions } = extractMultiMatchSnippet(
+            const {
+              snippet,
+              metadata,
+              matchPositions: adjustedPositions,
+            } = extractMultiMatchSnippet(
               content,
               matchPositions,
-              config.snippetSize
+              config.snippetSize,
             );
 
             // Create modified message with snippet content
             processedMessage = {
               ...message,
-              content: snippet
+              content: snippet,
             };
             truncation = metadata;
             finalMatchPositions = adjustedPositions;
-          } else if (config.mode === 'full' && config.maxContentLength > 0 && content.length > config.maxContentLength) {
+          } else if (
+            config.mode === 'full' &&
+            config.maxContentLength > 0 &&
+            content.length > config.maxContentLength
+          ) {
             // Apply max content length limit even in full mode
             const { content: limitedContent, metadata } = applyContentLimit(
               content,
-              config.maxContentLength
+              config.maxContentLength,
             );
 
             processedMessage = {
               ...message,
-              content: limitedContent
+              content: limitedContent,
             };
             truncation = metadata;
           }
@@ -179,12 +205,19 @@ export abstract class BaseAgentReader {
           const sessionSnippet = {
             totalMessages: messages.length,
             messageIndex: i,
-            sessionSummary: generateSessionSummary(messages.length, i, message.role)
+            sessionSummary: generateSessionSummary(
+              messages.length,
+              i,
+              message.role,
+            ),
           };
 
           // Get the first matched text for backward compatibility
           const firstMatch = matchPositions[0];
-          const matchedText = content.substring(firstMatch.start, firstMatch.end);
+          const matchedText = content.substring(
+            firstMatch.start,
+            firstMatch.end,
+          );
 
           matches.push({
             message: processedMessage,
@@ -193,7 +226,7 @@ export abstract class BaseAgentReader {
             contextAfter,
             matchPositions: finalMatchPositions,
             truncation,
-            sessionSnippet
+            sessionSnippet,
           });
         }
       }

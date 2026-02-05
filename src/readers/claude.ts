@@ -61,7 +61,7 @@ export class ClaudeReader extends BaseAgentReader {
   private async resolveSegments(
     segments: string[],
     start: number,
-    basePath: string
+    basePath: string,
   ): Promise<string | null> {
     if (start >= segments.length) return basePath;
 
@@ -136,7 +136,10 @@ export class ClaudeReader extends BaseAgentReader {
           for (const file of files) {
             if (file.endsWith('.jsonl')) {
               const sessionId = file.replace('.jsonl', '');
-              const session = await this.readSession(sessionId, { projectDir: dir.name, workDir });
+              const session = await this.readSession(sessionId, {
+                projectDir: dir.name,
+                workDir,
+              });
 
               if (session && session.messages.length > 0) {
                 sessions.push(session);
@@ -158,7 +161,10 @@ export class ClaudeReader extends BaseAgentReader {
   /**
    * Read a specific Claude Code session
    */
-  async readSession(sessionId: string, additionalContext?: { projectDir: string; workDir: string }): Promise<Session | null> {
+  async readSession(
+    sessionId: string,
+    additionalContext?: { projectDir: string; workDir: string },
+  ): Promise<Session | null> {
     try {
       const projectsDir = this.getSessionsDir();
 
@@ -175,7 +181,7 @@ export class ClaudeReader extends BaseAgentReader {
             await fs.access(sessionPath);
             additionalContext = {
               projectDir: dir.name,
-              workDir: await this.decodeProjectPath(dir.name)
+              workDir: await this.decodeProjectPath(dir.name),
             };
             break;
           } catch {
@@ -188,7 +194,11 @@ export class ClaudeReader extends BaseAgentReader {
         }
       }
 
-      const sessionPath = join(projectsDir, additionalContext.projectDir, `${sessionId}.jsonl`);
+      const sessionPath = join(
+        projectsDir,
+        additionalContext.projectDir,
+        `${sessionId}.jsonl`,
+      );
       const lines = await readJSONL(sessionPath);
 
       if (lines.length === 0) {
@@ -218,7 +228,9 @@ export class ClaudeReader extends BaseAgentReader {
         }
 
         const content = this.extractTextContent(line.message.content);
-        const timestamp = line.timestamp ? new Date(line.timestamp) : sessionTimestamp;
+        const timestamp = line.timestamp
+          ? new Date(line.timestamp)
+          : sessionTimestamp;
 
         messages.push({
           role,
@@ -226,7 +238,7 @@ export class ClaudeReader extends BaseAgentReader {
           timestamp,
           agentType: this.agentType,
           sessionId,
-          workDir: additionalContext.workDir
+          workDir: additionalContext.workDir,
         });
       }
 
@@ -235,7 +247,7 @@ export class ClaudeReader extends BaseAgentReader {
         agentType: this.agentType,
         workDir: additionalContext.workDir,
         timestamp: sessionTimestamp,
-        messages
+        messages,
       };
     } catch (error) {
       // Session not found or can't be read

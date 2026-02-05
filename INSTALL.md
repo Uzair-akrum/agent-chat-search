@@ -64,6 +64,7 @@ agent-search --query "test" --agent kimi --limit 3
 ### For Claude Code Users
 
 Sessions are automatically read from:
+
 ```
 ~/.claude/projects/
 ```
@@ -71,6 +72,7 @@ Sessions are automatically read from:
 ### For Kimi Users
 
 Sessions are automatically read from:
+
 ```
 ~/.kimi/sessions/
 ```

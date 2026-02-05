@@ -16,7 +16,7 @@ export async function readJSONL(filePath: string): Promise<any[]> {
     const fileStream = createReadStream(filePath, { encoding: 'utf-8' });
     const rl = createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     for await (const line of rl) {

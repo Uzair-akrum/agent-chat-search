@@ -12,13 +12,13 @@ function extractStringsDeep(obj: any, depth: number = 0): string {
   if (typeof obj === 'number' || typeof obj === 'boolean') return '';
   if (Array.isArray(obj)) {
     return obj
-      .map(item => extractStringsDeep(item, depth + 1))
+      .map((item) => extractStringsDeep(item, depth + 1))
       .filter(Boolean)
       .join('\n');
   }
   if (typeof obj === 'object' && obj !== null) {
     return Object.values(obj)
-      .map(v => extractStringsDeep(v, depth + 1))
+      .map((v) => extractStringsDeep(v, depth + 1))
       .filter(Boolean)
       .join('\n');
   }
@@ -38,7 +38,7 @@ export function extractTextContent(content: any): string {
   // Array of content blocks (Claude Code format)
   if (Array.isArray(content)) {
     return content
-      .map(item => {
+      .map((item) => {
         if (typeof item === 'string') {
           return item;
         }
@@ -84,7 +84,7 @@ export function extractTextContent(content: any): string {
 
         return '';
       })
-      .filter(text => text.length > 0)
+      .filter((text) => text.length > 0)
       .join('\n');
   }
 
@@ -107,7 +107,10 @@ export function stripThinkingBlocks(content: string): string {
 /**
  * Truncate content to a maximum length with ellipsis
  */
-export function truncateContent(content: string, maxLength: number = 500): string {
+export function truncateContent(
+  content: string,
+  maxLength: number = 500,
+): string {
   if (content.length <= maxLength) {
     return content;
   }

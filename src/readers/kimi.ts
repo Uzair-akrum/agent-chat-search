@@ -118,7 +118,9 @@ export class KimiReader extends BaseAgentReader {
       }
 
       // Read all work directory hashes
-      const workDirHashes = await fs.readdir(sessionsDir, { withFileTypes: true });
+      const workDirHashes = await fs.readdir(sessionsDir, {
+        withFileTypes: true,
+      });
 
       for (const hashDir of workDirHashes) {
         if (!hashDir.isDirectory()) continue;
@@ -135,13 +137,18 @@ export class KimiReader extends BaseAgentReader {
 
         try {
           // Read all session IDs in this work directory
-          const sessionIds = await fs.readdir(workDirPath, { withFileTypes: true });
+          const sessionIds = await fs.readdir(workDirPath, {
+            withFileTypes: true,
+          });
 
           for (const sessionDir of sessionIds) {
             if (!sessionDir.isDirectory()) continue;
 
             const sessionId = sessionDir.name;
-            const session = await this.readSession(sessionId, { workDirHash, workDir });
+            const session = await this.readSession(sessionId, {
+              workDirHash,
+              workDir,
+            });
 
             if (session && session.messages.length > 0) {
               sessions.push(session);
@@ -162,7 +169,10 @@ export class KimiReader extends BaseAgentReader {
   /**
    * Read a specific Kimi session
    */
-  async readSession(sessionId: string, additionalContext?: { workDirHash: string; workDir: string }): Promise<Session | null> {
+  async readSession(
+    sessionId: string,
+    additionalContext?: { workDirHash: string; workDir: string },
+  ): Promise<Session | null> {
     await this.loadMetadata();
 
     try {
@@ -170,13 +180,20 @@ export class KimiReader extends BaseAgentReader {
 
       // If no additional context provided, we need to find the session
       if (!additionalContext) {
-        const workDirHashes = await fs.readdir(sessionsDir, { withFileTypes: true });
+        const workDirHashes = await fs.readdir(sessionsDir, {
+          withFileTypes: true,
+        });
 
         for (const hashDir of workDirHashes) {
           if (!hashDir.isDirectory()) continue;
 
           const workDirHash = hashDir.name;
-          const sessionPath = join(sessionsDir, workDirHash, sessionId, 'context.jsonl');
+          const sessionPath = join(
+            sessionsDir,
+            workDirHash,
+            sessionId,
+            'context.jsonl',
+          );
 
           try {
             await fs.access(sessionPath);
@@ -193,7 +210,12 @@ export class KimiReader extends BaseAgentReader {
         }
       }
 
-      const contextPath = join(sessionsDir, additionalContext.workDirHash, sessionId, 'context.jsonl');
+      const contextPath = join(
+        sessionsDir,
+        additionalContext.workDirHash,
+        sessionId,
+        'context.jsonl',
+      );
       const lines = await readJSONL(contextPath);
 
       if (lines.length === 0) {
@@ -205,14 +227,19 @@ export class KimiReader extends BaseAgentReader {
       let sessionEnd = new Date();
       try {
         const stats = await fs.stat(contextPath);
-        sessionStart = stats.birthtime.getTime() > 0 ? stats.birthtime : stats.mtime;
+        sessionStart =
+          stats.birthtime.getTime() > 0 ? stats.birthtime : stats.mtime;
         sessionEnd = stats.mtime;
       } catch {
         // Use current time if stat fails
       }
 
       // First pass: collect relevant lines and check for timestamp fields
-      const relevantLines: Array<{ role: string; content: any; timestamp?: Date }> = [];
+      const relevantLines: Array<{
+        role: string;
+        content: any;
+        timestamp?: Date;
+      }> = [];
 
       for (const line of lines) {
         if (line.role === '_checkpoint') continue;
@@ -227,14 +254,20 @@ export class KimiReader extends BaseAgentReader {
         } else if (line.created_at) {
           msgTimestamp = new Date(line.created_at);
         } else if (line.ts) {
-          msgTimestamp = new Date(typeof line.ts === 'number' ? line.ts * 1000 : line.ts);
+          msgTimestamp = new Date(
+            typeof line.ts === 'number' ? line.ts * 1000 : line.ts,
+          );
         }
 
-        relevantLines.push({ role, content: line.content, timestamp: msgTimestamp });
+        relevantLines.push({
+          role,
+          content: line.content,
+          timestamp: msgTimestamp,
+        });
       }
 
       // Build messages with best-available timestamps
-      const hasPerMessageTimestamps = relevantLines.some(l => l.timestamp);
+      const hasPerMessageTimestamps = relevantLines.some((l) => l.timestamp);
       const messages: Message[] = [];
       const totalLines = relevantLines.length;
 
@@ -250,7 +283,8 @@ export class KimiReader extends BaseAgentReader {
           // Interpolate between file creation and modification time
           const fraction = idx / (totalLines - 1);
           timestamp = new Date(
-            sessionStart.getTime() + fraction * (sessionEnd.getTime() - sessionStart.getTime())
+            sessionStart.getTime() +
+              fraction * (sessionEnd.getTime() - sessionStart.getTime()),
           );
         } else {
           timestamp = sessionEnd;
@@ -262,7 +296,7 @@ export class KimiReader extends BaseAgentReader {
           timestamp,
           agentType: this.agentType,
           sessionId,
-          workDir: additionalContext.workDir
+          workDir: additionalContext.workDir,
         });
       }
 
@@ -271,7 +305,7 @@ export class KimiReader extends BaseAgentReader {
         agentType: this.agentType,
         workDir: additionalContext.workDir,
         timestamp: sessionStart,
-        messages
+        messages,
       };
     } catch (error) {
       // Session not found or can't be read

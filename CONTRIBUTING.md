@@ -93,8 +93,9 @@ if (options.agents.includes('codex')) {
 - **Comments**: Document complex logic
 
 Example:
+
 ```typescript
-import type { Message } from './types.js';  // ✅ Note .js extension
+import type { Message } from './types.js'; // ✅ Note .js extension
 
 /**
  * Extract text content from various formats
@@ -149,6 +150,7 @@ Detailed explanation if needed.
 ```
 
 Types:
+
 - `feat:` New feature
 - `fix:` Bug fix
 - `docs:` Documentation changes
@@ -159,6 +161,7 @@ Types:
 ## Questions?
 
 Open an issue for:
+
 - Feature requests
 - Bug reports
 - Questions about implementation

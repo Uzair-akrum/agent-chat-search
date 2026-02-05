@@ -26,19 +26,19 @@ export interface SessionListResult {
  */
 function getSessionTopic(session: Session): string | undefined {
   // Find first user message (usually contains the topic/request)
-  const firstUserMessage = session.messages.find(m => m.role === 'user');
+  const firstUserMessage = session.messages.find((m) => m.role === 'user');
   if (firstUserMessage) {
     // Truncate to first 100 chars for preview
     const content = firstUserMessage.content.replace(/\s+/g, ' ').trim();
     return content.length > 100 ? content.substring(0, 100) + '...' : content;
   }
-  
+
   // Fallback to first message of any role
   if (session.messages.length > 0) {
     const content = session.messages[0].content.replace(/\s+/g, ' ').trim();
     return content.length > 100 ? content.substring(0, 100) + '...' : content;
   }
-  
+
   return undefined;
 }
 
@@ -48,7 +48,7 @@ function getSessionTopic(session: Session): string | undefined {
 export async function listSessions(
   agents: AgentType[],
   workDirFilter?: string,
-  limit?: number
+  limit?: number,
 ): Promise<SessionListResult> {
   const readers = [];
 
@@ -66,7 +66,7 @@ export async function listSessions(
 
   for (const reader of readers) {
     const sessions = await reader.findSessions(workDirFilter);
-    
+
     for (const session of sessions) {
       allSessions.push({
         sessionId: session.sessionId,
@@ -74,7 +74,7 @@ export async function listSessions(
         workDir: session.workDir,
         timestamp: session.timestamp,
         firstMessage: getSessionTopic(session),
-        messageCount: session.messages.length
+        messageCount: session.messages.length,
       });
     }
   }
@@ -91,7 +91,7 @@ export async function listSessions(
   return {
     sessions: allSessions,
     totalSessions: totalBeforeLimit,
-    agents
+    agents,
   };
 }
 
@@ -100,14 +100,16 @@ export async function listSessions(
  */
 export function formatSessionList(result: SessionListResult): string {
   const lines: string[] = [];
-  
-  lines.push(`Found ${result.totalSessions} sessions across ${result.agents.length} agent(s):\n`);
-  
+
+  lines.push(
+    `Found ${result.totalSessions} sessions across ${result.agents.length} agent(s):\n`,
+  );
+
   if (result.sessions.length === 0) {
     lines.push('No sessions found.');
     return lines.join('\n');
   }
-  
+
   result.sessions.forEach((session, index) => {
     lines.push(`--- Session ${index + 1} [${session.agentType}] ---`);
     lines.push(`ID: ${session.sessionId}`);
@@ -115,18 +117,20 @@ export function formatSessionList(result: SessionListResult): string {
     lines.push(`Agent: ${capitalizeAgentType(session.agentType)}`);
     lines.push(`Time: ${session.timestamp.toISOString()}`);
     lines.push(`Messages: ${session.messageCount}`);
-    
+
     if (session.firstMessage) {
       lines.push(`Topic: ${session.firstMessage}`);
     }
-    
+
     lines.push('');
   });
-  
+
   if (result.sessions.length < result.totalSessions) {
-    lines.push(`... and ${result.totalSessions - result.sessions.length} more sessions`);
+    lines.push(
+      `... and ${result.totalSessions - result.sessions.length} more sessions`,
+    );
   }
-  
+
   return lines.join('\n');
 }
 
@@ -136,12 +140,12 @@ export function formatSessionList(result: SessionListResult): string {
 export function formatSessionListJSON(result: SessionListResult): string {
   const serializable = {
     ...result,
-    sessions: result.sessions.map(s => ({
+    sessions: result.sessions.map((s) => ({
       ...s,
-      timestamp: s.timestamp.toISOString()
-    }))
+      timestamp: s.timestamp.toISOString(),
+    })),
   };
-  
+
   return JSON.stringify(serializable, null, 2);
 }
 

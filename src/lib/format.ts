@@ -2,7 +2,12 @@
  * Output formatting utilities
  */
 
-import type { SearchResult, SearchMatch, Message, TruncationMetadata } from '../types.js';
+import type {
+  SearchResult,
+  SearchMatch,
+  Message,
+  TruncationMetadata,
+} from '../types.js';
 import { calculateShownPercentage, formatTruncationInfo } from './snippet.js';
 
 /**
@@ -12,22 +17,25 @@ export function formatResults(result: SearchResult): string {
   const lines: string[] = [];
 
   // Header with token count
-  let header = `Found ${result.totalMatches} matches across ${result.agents.length} agent(s) ` +
+  let header =
+    `Found ${result.totalMatches} matches across ${result.agents.length} agent(s) ` +
     `(searched ${result.searchedSessions} sessions)`;
-  
+
   if (result.estimatedTokens !== undefined) {
     header += `\nEstimated tokens: ~${result.estimatedTokens}`;
   }
-  
+
   lines.push(header + '\n');
 
   // Show warnings
   if (result.tokenBudgetExceeded) {
     lines.push('⚠ Token budget exceeded - showing partial results\n');
   }
-  
+
   if (result.truncatedCount && result.truncatedCount > 0) {
-    lines.push(`⚠ ${result.truncatedCount} additional matches not shown (hit result limit)\n`);
+    lines.push(
+      `⚠ ${result.truncatedCount} additional matches not shown (hit result limit)\n`,
+    );
   }
 
   // Format each match
@@ -37,19 +45,25 @@ export function formatResults(result: SearchResult): string {
     lines.push(`Work Dir: ${match.message.workDir}`);
     lines.push(`Agent: ${capitalizeAgentType(match.message.agentType)}`);
     lines.push(`Time: ${match.message.timestamp.toISOString()}`);
-    
+
     // Show session position if available
     if (match.sessionSnippet) {
-      const percentage = Math.round((match.sessionSnippet.messageIndex / match.sessionSnippet.totalMessages) * 100);
-      lines.push(`Position: ${match.message.role} message ${match.sessionSnippet.messageIndex + 1}/${match.sessionSnippet.totalMessages} (${percentage}% through session)`);
+      const percentage = Math.round(
+        (match.sessionSnippet.messageIndex /
+          match.sessionSnippet.totalMessages) *
+          100,
+      );
+      lines.push(
+        `Position: ${match.message.role} message ${match.sessionSnippet.messageIndex + 1}/${match.sessionSnippet.totalMessages} (${percentage}% through session)`,
+      );
     }
-    
+
     lines.push('');
 
     // Context before
     if (match.contextBefore.length > 0) {
       lines.push('Context:');
-      match.contextBefore.forEach(msg => {
+      match.contextBefore.forEach((msg) => {
         lines.push(formatContextMessage(msg));
       });
     }
@@ -59,7 +73,7 @@ export function formatResults(result: SearchResult): string {
 
     // Context after
     if (match.contextAfter.length > 0) {
-      match.contextAfter.forEach(msg => {
+      match.contextAfter.forEach((msg) => {
         lines.push(formatContextMessage(msg));
       });
     }
@@ -84,12 +98,12 @@ function formatContextMessage(message: Message): string {
 function formatMatchMessage(match: SearchMatch): string {
   const message = match.message;
   let content = message.content;
-  
+
   // Clean up whitespace but preserve snippet structure
   content = content.replace(/\s+/g, ' ').trim();
-  
+
   let result = `>>> [${message.role}] ${content}`;
-  
+
   // Add truncation info if present
   if (match.truncation?.content_truncated) {
     const truncationInfo = formatTruncationInfo(match.truncation);
@@ -97,7 +111,7 @@ function formatMatchMessage(match: SearchMatch): string {
       result += `\n    ${truncationInfo}`;
     }
   }
-  
+
   return result;
 }
 
@@ -132,7 +146,9 @@ function capitalizeAgentType(agentType: string): string {
 /**
  * Format truncation metadata for JSON output (CASS pattern)
  */
-function formatTruncationForJSON(truncation?: TruncationMetadata): Record<string, any> | undefined {
+function formatTruncationForJSON(
+  truncation?: TruncationMetadata,
+): Record<string, any> | undefined {
   if (!truncation) return undefined;
 
   return {
@@ -141,7 +157,7 @@ function formatTruncationForJSON(truncation?: TruncationMetadata): Record<string
     _truncation_type: truncation.truncation_type,
     snippet_start: truncation.snippet_start,
     snippet_end: truncation.snippet_end,
-    shown_percentage: calculateShownPercentage(truncation)
+    shown_percentage: calculateShownPercentage(truncation),
   };
 }
 
@@ -152,21 +168,21 @@ export function formatResultsJSON(result: SearchResult): string {
   // Convert dates to ISO strings for JSON serialization
   const serializable = {
     ...result,
-    matches: result.matches.map(match => {
+    matches: result.matches.map((match) => {
       const baseMatch: Record<string, any> = {
         message: {
           ...match.message,
-          timestamp: match.message.timestamp.toISOString()
+          timestamp: match.message.timestamp.toISOString(),
         },
         matchedText: match.matchedText,
-        contextBefore: match.contextBefore.map(msg => ({
+        contextBefore: match.contextBefore.map((msg) => ({
           ...msg,
-          timestamp: msg.timestamp.toISOString()
+          timestamp: msg.timestamp.toISOString(),
         })),
-        contextAfter: match.contextAfter.map(msg => ({
+        contextAfter: match.contextAfter.map((msg) => ({
           ...msg,
-          timestamp: msg.timestamp.toISOString()
-        }))
+          timestamp: msg.timestamp.toISOString(),
+        })),
       };
 
       // Add optional fields if present
@@ -189,7 +205,7 @@ export function formatResultsJSON(result: SearchResult): string {
       }
 
       return baseMatch;
-    })
+    }),
   };
 
   return JSON.stringify(serializable, null, 2);

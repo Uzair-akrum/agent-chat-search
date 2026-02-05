@@ -3,7 +3,11 @@
  * Prevents context window exhaustion by extracting contextual excerpts around matches
  */
 
-import type { SnippetConfig, TruncationMetadata, MatchPosition } from '../types.js';
+import type {
+  SnippetConfig,
+  TruncationMetadata,
+  MatchPosition,
+} from '../types.js';
 
 /**
  * Default configuration for snippet extraction
@@ -12,7 +16,7 @@ export const DEFAULT_SNIPPET_CONFIG: SnippetConfig = {
   mode: 'snippet',
   snippetSize: 200,
   maxContentLength: 500,
-  contextWindow: 4096
+  contextWindow: 4096,
 };
 
 /**
@@ -44,13 +48,15 @@ export function estimateTokens(text: string): number {
 export function findWordBoundary(
   content: string,
   position: number,
-  direction: 'backward' | 'forward' = 'backward'
+  direction: 'backward' | 'forward' = 'backward',
 ): number {
   if (position <= 0) return 0;
   if (position >= content.length) return content.length;
 
-  const searchDistance = Math.min(MAX_WORD_BOUNDARY_SEARCH, 
-    direction === 'backward' ? position : content.length - position);
+  const searchDistance = Math.min(
+    MAX_WORD_BOUNDARY_SEARCH,
+    direction === 'backward' ? position : content.length - position,
+  );
 
   if (direction === 'backward') {
     // Search backward for a word boundary (whitespace or punctuation)
@@ -92,7 +98,7 @@ export function extractSnippet(
   content: string,
   matchStart: number,
   matchEnd: number,
-  snippetSize: number = 200
+  snippetSize: number = 200,
 ): { snippet: string; metadata: TruncationMetadata } {
   // Handle edge cases
   if (!content || content.length === 0) {
@@ -103,13 +109,13 @@ export function extractSnippet(
         original_length: 0,
         snippet_start: 0,
         snippet_end: 0,
-        truncation_type: 'none'
-      }
+        truncation_type: 'none',
+      },
     };
   }
 
   const originalLength = content.length;
-  
+
   // If content is smaller than snippet size, return full content
   if (originalLength <= snippetSize * 2 + (matchEnd - matchStart)) {
     return {
@@ -119,8 +125,8 @@ export function extractSnippet(
         original_length: originalLength,
         snippet_start: 0,
         snippet_end: originalLength,
-        truncation_type: 'none'
-      }
+        truncation_type: 'none',
+      },
     };
   }
 
@@ -141,7 +147,7 @@ export function extractSnippet(
     original_length: originalLength,
     snippet_start: snippetStart,
     snippet_end: snippetEnd,
-    truncation_type: 'snippet'
+    truncation_type: 'snippet',
   };
 
   return { snippet, metadata };
@@ -150,7 +156,9 @@ export function extractSnippet(
 /**
  * Sort ranges by start position
  */
-function sortRanges(ranges: Array<{ start: number; end: number }>): Array<{ start: number; end: number }> {
+function sortRanges(
+  ranges: Array<{ start: number; end: number }>,
+): Array<{ start: number; end: number }> {
   return [...ranges].sort((a, b) => a.start - b.start);
 }
 
@@ -160,18 +168,18 @@ function sortRanges(ranges: Array<{ start: number; end: number }>): Array<{ star
  * @returns Consolidated non-overlapping ranges
  */
 export function mergeOverlappingRanges(
-  ranges: Array<{ start: number; end: number }>
+  ranges: Array<{ start: number; end: number }>,
 ): Array<{ start: number; end: number }> {
   if (ranges.length <= 1) return ranges;
 
   const sorted = sortRanges(ranges);
   const merged: Array<{ start: number; end: number }> = [];
-  
+
   let current = sorted[0];
-  
+
   for (let i = 1; i < sorted.length; i++) {
     const next = sorted[i];
-    
+
     // Check if ranges overlap or are adjacent (within 10 chars)
     if (next.start <= current.end + 10) {
       // Merge ranges
@@ -181,7 +189,7 @@ export function mergeOverlappingRanges(
       current = next;
     }
   }
-  
+
   merged.push(current);
   return merged;
 }
@@ -197,8 +205,12 @@ export function mergeOverlappingRanges(
 export function extractMultiMatchSnippet(
   content: string,
   matches: Array<{ start: number; end: number }>,
-  snippetSize: number = 200
-): { snippet: string; metadata: TruncationMetadata; matchPositions: Array<{ start: number; end: number }> } {
+  snippetSize: number = 200,
+): {
+  snippet: string;
+  metadata: TruncationMetadata;
+  matchPositions: Array<{ start: number; end: number }>;
+} {
   // Handle edge cases
   if (!content || content.length === 0 || matches.length === 0) {
     return {
@@ -208,9 +220,9 @@ export function extractMultiMatchSnippet(
         original_length: content?.length || 0,
         snippet_start: 0,
         snippet_end: content?.length || 0,
-        truncation_type: 'none'
+        truncation_type: 'none',
       },
-      matchPositions: []
+      matchPositions: [],
     };
   }
 
@@ -225,16 +237,16 @@ export function extractMultiMatchSnippet(
         original_length: originalLength,
         snippet_start: 0,
         snippet_end: originalLength,
-        truncation_type: 'none'
+        truncation_type: 'none',
       },
-      matchPositions: matches
+      matchPositions: matches,
     };
   }
 
   // Calculate snippet ranges for each match
-  const snippetRanges = matches.map(match => ({
+  const snippetRanges = matches.map((match) => ({
     start: Math.max(0, match.start - snippetSize),
-    end: Math.min(originalLength, match.end + snippetSize)
+    end: Math.min(originalLength, match.end + snippetSize),
   }));
 
   // Merge overlapping ranges
@@ -247,7 +259,7 @@ export function extractMultiMatchSnippet(
 
   for (let i = 0; i < mergedRanges.length; i++) {
     const range = mergedRanges[i];
-    
+
     // Track total coverage
     if (totalSnippetStart === -1) totalSnippetStart = range.start;
     totalSnippetEnd = range.end;
@@ -263,7 +275,8 @@ export function extractMultiMatchSnippet(
 
     // Add ellipsis prefix if not at start
     const prefix = snippetStart > 0 && i === 0 ? '...' : '';
-    const suffix = snippetEnd < originalLength && i === mergedRanges.length - 1 ? '...' : '';
+    const suffix =
+      snippetEnd < originalLength && i === mergedRanges.length - 1 ? '...' : '';
 
     const snippetPart = content.substring(snippetStart, snippetEnd);
     parts.push(prefix + snippetPart + suffix);
@@ -281,8 +294,10 @@ export function extractMultiMatchSnippet(
       if (match.start >= range.start && match.end <= range.end) {
         // Calculate position in the combined snippet
         const rangeStart = findWordBoundary(content, range.start, 'backward');
-        const prefix = rangeStart > 0 && mergedRanges.indexOf(range) === 0 ? 3 : 0; // Length of "..."
-        const adjustedStart = currentOffset + (match.start - rangeStart) + prefix;
+        const prefix =
+          rangeStart > 0 && mergedRanges.indexOf(range) === 0 ? 3 : 0; // Length of "..."
+        const adjustedStart =
+          currentOffset + (match.start - rangeStart) + prefix;
         const adjustedEnd = adjustedStart + (match.end - match.start);
         adjustedMatchPositions.push({ start: adjustedStart, end: adjustedEnd });
         break;
@@ -299,13 +314,14 @@ export function extractMultiMatchSnippet(
     original_length: originalLength,
     snippet_start: totalSnippetStart,
     snippet_end: totalSnippetEnd,
-    truncation_type: mergedRanges.length > 1 ? 'snippet' : 'snippet'
+    truncation_type: mergedRanges.length > 1 ? 'snippet' : 'snippet',
   };
 
   return {
     snippet: combinedSnippet,
     metadata,
-    matchPositions: adjustedMatchPositions.length > 0 ? adjustedMatchPositions : matches
+    matchPositions:
+      adjustedMatchPositions.length > 0 ? adjustedMatchPositions : matches,
   };
 }
 
@@ -317,7 +333,7 @@ export function extractMultiMatchSnippet(
  */
 export function applyContentLimit(
   content: string,
-  maxLength: number
+  maxLength: number,
 ): { content: string; metadata: TruncationMetadata } {
   if (!content || content.length <= maxLength) {
     return {
@@ -327,8 +343,8 @@ export function applyContentLimit(
         original_length: content?.length || 0,
         snippet_start: 0,
         snippet_end: content?.length || 0,
-        truncation_type: 'none'
-      }
+        truncation_type: 'none',
+      },
     };
   }
 
@@ -343,8 +359,8 @@ export function applyContentLimit(
       original_length: content.length,
       snippet_start: 0,
       snippet_end: cutPoint,
-      truncation_type: 'length'
-    }
+      truncation_type: 'length',
+    },
   };
 }
 
@@ -358,7 +374,7 @@ export function applyContentLimit(
 export function generateSessionSummary(
   totalMessages: number,
   messageIndex: number,
-  role: string
+  role: string,
 ): string {
   const percentage = Math.round((messageIndex / totalMessages) * 100);
   return `${role} message ${messageIndex + 1}/${totalMessages} (${percentage}% through session)`;
@@ -373,7 +389,7 @@ export function calculateShownPercentage(metadata: TruncationMetadata): number {
   if (!metadata.content_truncated || metadata.original_length === 0) {
     return 100;
   }
-  
+
   const shownLength = metadata.snippet_end - metadata.snippet_start;
   return Math.round((shownLength / metadata.original_length) * 100);
 }
@@ -389,9 +405,13 @@ export function formatTruncationInfo(metadata: TruncationMetadata): string {
   }
 
   const percentage = calculateShownPercentage(metadata);
-  const typeLabel = metadata.truncation_type === 'snippet' ? 'snippet' : 
-                    metadata.truncation_type === 'length' ? 'max length' : 'token limit';
-  
+  const typeLabel =
+    metadata.truncation_type === 'snippet'
+      ? 'snippet'
+      : metadata.truncation_type === 'length'
+        ? 'max length'
+        : 'token limit';
+
   return `[Truncated: showing ${percentage}% of ${metadata.original_length} chars, type: ${typeLabel}]`;
 }
 
@@ -404,7 +424,7 @@ export function formatTruncationInfo(metadata: TruncationMetadata): string {
  */
 export function enforceTokenBudget<T extends { message: { content: string } }>(
   matches: T[],
-  maxTokens: number
+  maxTokens: number,
 ): { matches: T[]; budgetExceeded: boolean; estimatedTokens: number } {
   let currentTokens = 0;
   const result: T[] = [];
@@ -412,15 +432,15 @@ export function enforceTokenBudget<T extends { message: { content: string } }>(
 
   for (const match of matches) {
     const matchTokens = estimateTokens(match.message.content);
-    
+
     // Add overhead for metadata (approximate)
     const overheadTokens = 10;
-    
+
     if (currentTokens + matchTokens + overheadTokens > maxTokens) {
       budgetExceeded = true;
       break;
     }
-    
+
     currentTokens += matchTokens + overheadTokens;
     result.push(match);
   }
@@ -428,6 +448,6 @@ export function enforceTokenBudget<T extends { message: { content: string } }>(
   return {
     matches: result,
     budgetExceeded,
-    estimatedTokens: currentTokens
+    estimatedTokens: currentTokens,
   };
 }

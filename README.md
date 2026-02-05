@@ -35,6 +35,7 @@ npx openskills sync
 ```
 
 After install, run the one-time setup:
+
 ```bash
 cd ~/.claude/skills/agent-chat-search && npm install && npm run build
 ```
@@ -80,12 +81,14 @@ Once installed via OpenSkills, AI agents can automatically use this skill. Simpl
 > "Search my chat history for the authentication code we discussed last week"
 
 The agent will:
+
 1. Detect the `agent-chat-search` skill is available
 2. Run: `npx openskills read agent-chat-search`
 3. Execute the search across your Claude Code and Kimi sessions
 4. Present the results
 
 **Example agent interactions:**
+
 - "Find my recent chat about API error handling"
 - "List my Kimi sessions from yesterday"
 - "Search for that React component we built in Claude"
@@ -102,7 +105,7 @@ npm start -- --query "error handling" --all
 # Search only Claude Code sessions
 npm start -- --query "refactor" --agent claude
 
-# Search only Kimi sessions  
+# Search only Kimi sessions
 npm start -- --query "bug fix" --agent kimi
 
 # Show 3 context lines before/after matches
@@ -195,13 +198,13 @@ src/
 
 ## 🤝 Supported Agents
 
-| Agent | Session Location | Status |
-|-------|-----------------|--------|
+| Agent       | Session Location      | Status       |
+| ----------- | --------------------- | ------------ |
 | Claude Code | `~/.claude/projects/` | ✅ Supported |
-| Kimi | `~/.kimi/sessions/` | ✅ Supported |
-| Codex CLI | - | 🚧 Planned |
-| OpenCode | - | 🚧 Planned |
-| Cursor | - | 🚧 Planned |
+| Kimi        | `~/.kimi/sessions/`   | ✅ Supported |
+| Codex CLI   | -                     | 🚧 Planned   |
+| OpenCode    | -                     | 🚧 Planned   |
+| Cursor      | -                     | 🚧 Planned   |
 
 ## 🛠️ Development
 
@@ -222,6 +225,7 @@ node dist/search.js --query "test" --all
 ### Adding a New Agent Reader
 
 1. Create `src/readers/newagent.ts`:
+
 ```typescript
 import { BaseAgentReader } from './base.js';
 
@@ -284,7 +288,7 @@ Position: assistant message 15/42 (36% through session)
 ## 🗺️ Roadmap
 
 - [x] Snippet extraction
-- [x] Token budget management  
+- [x] Token budget management
 - [x] Session listing mode
 - [ ] Support for Codex CLI
 - [ ] Support for OpenCode

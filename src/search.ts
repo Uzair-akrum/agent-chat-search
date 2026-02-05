@@ -9,8 +9,17 @@ import { Command } from 'commander';
 import { searchAgents } from './lib/search.js';
 
 import { formatResults, formatResultsJSON } from './lib/format.js';
-import { listSessions, formatSessionList, formatSessionListJSON } from './lib/session-list.js';
-import type { AgentType, MessageRole, SearchOptions, OutputMode } from './types.js';
+import {
+  listSessions,
+  formatSessionList,
+  formatSessionListJSON,
+} from './lib/session-list.js';
+import type {
+  AgentType,
+  MessageRole,
+  SearchOptions,
+  OutputMode,
+} from './types.js';
 
 /**
  * Parse human-friendly date strings into Date objects
@@ -40,10 +49,18 @@ function parseDate(input: string): Date {
     const unit = agoMatch[2];
     const d = new Date(now);
     switch (unit) {
-      case 'day': d.setDate(d.getDate() - n); break;
-      case 'hour': d.setHours(d.getHours() - n); break;
-      case 'week': d.setDate(d.getDate() - n * 7); break;
-      case 'month': d.setMonth(d.getMonth() - n); break;
+      case 'day':
+        d.setDate(d.getDate() - n);
+        break;
+      case 'hour':
+        d.setHours(d.getHours() - n);
+        break;
+      case 'week':
+        d.setDate(d.getDate() - n * 7);
+        break;
+      case 'month':
+        d.setMonth(d.getMonth() - n);
+        break;
     }
     return d;
   }
@@ -60,7 +77,7 @@ function parseDate(input: string): Date {
   }
 
   throw new Error(
-    `Unable to parse date: "${input}". Use ISO format (2024-01-01), or relative ("yesterday", "3 days ago", "last week").`
+    `Unable to parse date: "${input}". Use ISO format (2024-01-01), or relative ("yesterday", "3 days ago", "last week").`,
   );
 }
 
@@ -73,21 +90,50 @@ program
 
 program
   .option('-q, --query <query>', 'Search query string')
-  .option('-a, --agent <agents>', 'Comma-separated agent names (claude,kimi)', 'kimi')
+  .option(
+    '-a, --agent <agents>',
+    'Comma-separated agent names (claude,kimi)',
+    'kimi',
+  )
   .option('--all', 'Search across all agents')
   .option('-r, --role <role>', 'Filter by message role (user|assistant|tool)')
-  .option('-c, --context <lines>', 'Number of context lines before/after match', '0')
+  .option(
+    '-c, --context <lines>',
+    'Number of context lines before/after match',
+    '0',
+  )
   .option('-w, --work-dir <path>', 'Filter by work directory (substring match)')
   .option('-l, --limit <count>', 'Limit number of results', '50')
   .option('-j, --json', 'Output results as JSON')
-  .option('--output-mode <mode>', 'Output mode: snippet|full|summary', 'snippet')
-  .option('--snippet-size <chars>', 'Characters around match in snippet mode', '200')
-  .option('--max-content-length <chars>', 'Max chars per message (0 for unlimited)', '500')
+  .option(
+    '--output-mode <mode>',
+    'Output mode: snippet|full|summary',
+    'snippet',
+  )
+  .option(
+    '--snippet-size <chars>',
+    'Characters around match in snippet mode',
+    '200',
+  )
+  .option(
+    '--max-content-length <chars>',
+    'Max chars per message (0 for unlimited)',
+    '500',
+  )
   .option('--max-tokens <tokens>', 'Maximum total tokens (approximate)')
   .option('--literal', 'Treat query as literal text (disable regex)')
-  .option('--since <date>', 'Only include sessions after date (ISO, "yesterday", "3 days ago")')
-  .option('--before <date>', 'Only include sessions before date (ISO, "yesterday", "3 days ago")')
-  .option('--list-sessions', 'List all sessions instead of searching (no query needed)')
+  .option(
+    '--since <date>',
+    'Only include sessions after date (ISO, "yesterday", "3 days ago")',
+  )
+  .option(
+    '--before <date>',
+    'Only include sessions before date (ISO, "yesterday", "3 days ago")',
+  )
+  .option(
+    '--list-sessions',
+    'List all sessions instead of searching (no query needed)',
+  )
   .parse();
 
 async function main() {
@@ -95,11 +141,17 @@ async function main() {
 
   // Validate that we have either a query or --list-sessions
   if (!options.query && !options.listSessions) {
-    console.error('Error: --query is required (or use --list-sessions to browse sessions)');
+    console.error(
+      'Error: --query is required (or use --list-sessions to browse sessions)',
+    );
     console.error('');
     console.error('Usage:');
-    console.error('  agent-search --query "search term" [options]     # Search content');
-    console.error('  agent-search --list-sessions --all             # List all sessions');
+    console.error(
+      '  agent-search --query "search term" [options]     # Search content',
+    );
+    console.error(
+      '  agent-search --list-sessions --all             # List all sessions',
+    );
     console.error('');
     console.error('Examples:');
     console.error('  agent-search --query "authentication" --all');
@@ -115,10 +167,14 @@ async function main() {
     agents = ['claude', 'kimi'];
   } else {
     const agentList = options.agent.split(',').map((a: string) => a.trim());
-    agents = agentList.filter((a: string) => a === 'claude' || a === 'kimi') as AgentType[];
+    agents = agentList.filter(
+      (a: string) => a === 'claude' || a === 'kimi',
+    ) as AgentType[];
 
     if (agents.length === 0) {
-      console.error('Error: No valid agents specified. Valid agents: claude, kimi');
+      console.error(
+        'Error: No valid agents specified. Valid agents: claude, kimi',
+      );
       process.exit(1);
     }
   }
@@ -136,7 +192,7 @@ async function main() {
       const result = await listSessions(
         agents,
         options.workDir,
-        limit > 0 ? limit : undefined
+        limit > 0 ? limit : undefined,
       );
 
       if (options.json) {
@@ -151,8 +207,14 @@ async function main() {
     // Parse role filter
     let role: MessageRole | undefined;
     if (options.role) {
-      if (options.role !== 'user' && options.role !== 'assistant' && options.role !== 'tool') {
-        console.error('Error: Invalid role. Valid roles: user, assistant, tool');
+      if (
+        options.role !== 'user' &&
+        options.role !== 'assistant' &&
+        options.role !== 'tool'
+      ) {
+        console.error(
+          'Error: Invalid role. Valid roles: user, assistant, tool',
+        );
         process.exit(1);
       }
       role = options.role as MessageRole;
@@ -171,7 +233,9 @@ async function main() {
     if (options.outputMode) {
       const validModes: OutputMode[] = ['snippet', 'full', 'summary'];
       if (!validModes.includes(options.outputMode as OutputMode)) {
-        console.error('Error: Invalid output mode. Valid modes: snippet, full, summary');
+        console.error(
+          'Error: Invalid output mode. Valid modes: snippet, full, summary',
+        );
         process.exit(1);
       }
       outputMode = options.outputMode as OutputMode;
@@ -236,7 +300,7 @@ async function main() {
       maxContentLength: maxContentLength,
       maxTokens,
       since,
-      before
+      before,
     };
 
     // Execute search
@@ -248,7 +312,9 @@ async function main() {
     } else {
       if (result.totalMatches === 0) {
         console.log(`No matches found for query: "${options.query}"`);
-        console.log(`Searched ${result.searchedSessions} sessions across ${result.agents.length} agent(s)`);
+        console.log(
+          `Searched ${result.searchedSessions} sessions across ${result.agents.length} agent(s)`,
+        );
       } else {
         console.log(formatResults(result));
       }
@@ -259,7 +325,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

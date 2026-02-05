@@ -8,16 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2026-02-05
 
 ### Added
+
 - `--list-sessions` flag for browsing sessions without searching
 - Session info display (message count, topic preview)
 - Friendly help message when query is missing
 
 ### Changed
+
 - Query is now optional when using `--list-sessions`
 
 ## [1.1.0] - 2026-02-05
 
 ### Added
+
 - Snippet extraction to prevent context window overflow
 - Token budget management with `--max-tokens`
 - `--output-mode` flag (snippet/full/summary)
@@ -26,12 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Truncation indicators with percentage
 
 ### Changed
+
 - Default output mode is now "snippet" instead of full content
 - Estimated token count shown in output
 
 ## [1.0.0] - 2026-02-04
 
 ### Added
+
 - Initial release
 - Support for Claude Code sessions
 - Support for Kimi sessions
