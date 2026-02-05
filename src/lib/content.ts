@@ -3,8 +3,31 @@
  */
 
 /**
+ * Recursively extract all string values from a nested object/array.
+ * Used to pull searchable text from tool inputs and outputs.
+ */
+function extractStringsDeep(obj: any, depth: number = 0): string {
+  if (depth > 4) return '';
+  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'number' || typeof obj === 'boolean') return '';
+  if (Array.isArray(obj)) {
+    return obj
+      .map(item => extractStringsDeep(item, depth + 1))
+      .filter(Boolean)
+      .join('\n');
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    return Object.values(obj)
+      .map(v => extractStringsDeep(v, depth + 1))
+      .filter(Boolean)
+      .join('\n');
+  }
+  return '';
+}
+
+/**
  * Extract text content from various content formats
- * Handles: strings, arrays of content blocks, thinking blocks, tool outputs
+ * Handles: strings, arrays of content blocks, thinking blocks, tool inputs/outputs
  */
 export function extractTextContent(content: any): string {
   // Direct string content
@@ -30,14 +53,33 @@ export function extractTextContent(content: any): string {
           return `[Thinking: ${item.thinking}]`;
         }
 
-        // Tool use block
+        // Tool use block — extract actual input content for searchability
         if (item.type === 'tool_use') {
-          return `[Tool: ${item.name}]`;
+          const parts = [`[Tool: ${item.name}]`];
+          if (item.input) {
+            const inputText = extractStringsDeep(item.input);
+            if (inputText) parts.push(inputText);
+          }
+          return parts.join('\n');
         }
 
-        // Tool result block
+        // Tool result block — extract actual output content for searchability
         if (item.type === 'tool_result') {
-          return `[Tool Result: ${item.tool_use_id}]`;
+          const parts = ['[Tool Result]'];
+          if (typeof item.content === 'string') {
+            parts.push(item.content);
+          } else if (Array.isArray(item.content)) {
+            for (const block of item.content) {
+              if (typeof block === 'string') {
+                parts.push(block);
+              } else if (block && block.text) {
+                parts.push(block.text);
+              } else if (block && block.content) {
+                parts.push(extractStringsDeep(block.content));
+              }
+            }
+          }
+          return parts.filter(Boolean).join('\n');
         }
 
         return '';

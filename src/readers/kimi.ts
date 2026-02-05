@@ -200,41 +200,64 @@ export class KimiReader extends BaseAgentReader {
         return null;
       }
 
-      // Get session timestamp from file stats
-      let sessionTimestamp = new Date();
+      // Get session time range from file stats for interpolation
+      let sessionStart = new Date();
+      let sessionEnd = new Date();
       try {
         const stats = await fs.stat(contextPath);
-        sessionTimestamp = stats.mtime;
+        sessionStart = stats.birthtime.getTime() > 0 ? stats.birthtime : stats.mtime;
+        sessionEnd = stats.mtime;
       } catch {
         // Use current time if stat fails
       }
 
-      // Parse messages
-      const messages: Message[] = [];
+      // First pass: collect relevant lines and check for timestamp fields
+      const relevantLines: Array<{ role: string; content: any; timestamp?: Date }> = [];
 
       for (const line of lines) {
-        // Skip checkpoint messages
-        if (line.role === '_checkpoint') {
-          continue;
-        }
-
-        // Skip messages without content
-        if (!line.content) {
-          continue;
-        }
-
+        if (line.role === '_checkpoint') continue;
+        if (!line.content) continue;
         const role = line.role;
+        if (role !== 'user' && role !== 'assistant') continue;
 
-        // Only include user and assistant messages
-        if (role !== 'user' && role !== 'assistant') {
-          continue;
+        // Check for per-message timestamp fields (various possible field names)
+        let msgTimestamp: Date | undefined;
+        if (line.timestamp) {
+          msgTimestamp = new Date(line.timestamp);
+        } else if (line.created_at) {
+          msgTimestamp = new Date(line.created_at);
+        } else if (line.ts) {
+          msgTimestamp = new Date(typeof line.ts === 'number' ? line.ts * 1000 : line.ts);
         }
 
+        relevantLines.push({ role, content: line.content, timestamp: msgTimestamp });
+      }
+
+      // Build messages with best-available timestamps
+      const hasPerMessageTimestamps = relevantLines.some(l => l.timestamp);
+      const messages: Message[] = [];
+      const totalLines = relevantLines.length;
+
+      for (let idx = 0; idx < totalLines; idx++) {
+        const line = relevantLines[idx];
         const content = this.extractTextContent(line.content);
-        const timestamp = sessionTimestamp;
+
+        let timestamp: Date;
+        if (line.timestamp && !isNaN(line.timestamp.getTime())) {
+          // Use actual per-message timestamp if available
+          timestamp = line.timestamp;
+        } else if (!hasPerMessageTimestamps && totalLines > 1) {
+          // Interpolate between file creation and modification time
+          const fraction = idx / (totalLines - 1);
+          timestamp = new Date(
+            sessionStart.getTime() + fraction * (sessionEnd.getTime() - sessionStart.getTime())
+          );
+        } else {
+          timestamp = sessionEnd;
+        }
 
         messages.push({
-          role,
+          role: line.role as 'user' | 'assistant',
           content,
           timestamp,
           agentType: this.agentType,
@@ -247,7 +270,7 @@ export class KimiReader extends BaseAgentReader {
         sessionId,
         agentType: this.agentType,
         workDir: additionalContext.workDir,
-        timestamp: sessionTimestamp,
+        timestamp: sessionStart,
         messages
       };
     } catch (error) {

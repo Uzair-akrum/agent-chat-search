@@ -17,15 +17,87 @@ export class ClaudeReader extends BaseAgentReader {
     return join(homedir(), '.claude', 'projects');
   }
 
+  /** Cache for decoded paths to avoid repeated filesystem lookups */
+  private pathCache = new Map<string, string>();
+
   /**
-   * Decode Claude Code project path encoding
-   * Example: "-home-user-project" -> "/home/user/project"
+   * Decode Claude Code project path encoding with filesystem validation.
+   * Handles directories with hyphens (e.g. "-home-user-my-project" -> "/home/user/my-project")
+   * by checking which decoded path actually exists on disk.
    */
-  private decodeProjectPath(encoded: string): string {
+  private async decodeProjectPath(encoded: string): Promise<string> {
     if (!encoded.startsWith('-')) {
       return encoded;
     }
-    return '/' + encoded.slice(1).replace(/-/g, '/');
+
+    if (this.pathCache.has(encoded)) {
+      return this.pathCache.get(encoded)!;
+    }
+
+    const segments = encoded.slice(1).split('-');
+
+    // Fast path: naive decode (all hyphens -> slashes) — works when no dir has hyphens
+    const naive = '/' + segments.join('/');
+    try {
+      await fs.access(naive);
+      this.pathCache.set(encoded, naive);
+      return naive;
+    } catch {
+      // Not a real path, try smart resolution
+    }
+
+    // Smart resolution: greedy shortest-first with backtracking
+    const resolved = await this.resolveSegments(segments, 0, '');
+    const result = resolved || naive;
+    this.pathCache.set(encoded, result);
+    return result;
+  }
+
+  /**
+   * Recursively resolve path segments by checking the filesystem.
+   * Tries shortest component first (single segment), backtracks if the
+   * full resulting path doesn't exist.
+   */
+  private async resolveSegments(
+    segments: string[],
+    start: number,
+    basePath: string
+  ): Promise<string | null> {
+    if (start >= segments.length) return basePath;
+
+    for (let end = start + 1; end <= segments.length; end++) {
+      const component = segments.slice(start, end).join('-');
+      const candidate = basePath + '/' + component;
+
+      if (end === segments.length) {
+        // All remaining segments consumed — check if final path exists
+        try {
+          await fs.access(candidate);
+          return candidate;
+        } catch {
+          return candidate; // best-effort for this branch
+        }
+      }
+
+      try {
+        const stat = await fs.stat(candidate);
+        if (stat.isDirectory()) {
+          const result = await this.resolveSegments(segments, end, candidate);
+          if (result) {
+            try {
+              await fs.access(result);
+              return result; // full path validated
+            } catch {
+              continue; // backtrack: this branch didn't lead to a valid full path
+            }
+          }
+        }
+      } catch {
+        continue; // component doesn't exist, try longer grouping
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -49,7 +121,7 @@ export class ClaudeReader extends BaseAgentReader {
       for (const dir of dirs) {
         if (!dir.isDirectory()) continue;
 
-        const workDir = this.decodeProjectPath(dir.name);
+        const workDir = await this.decodeProjectPath(dir.name);
 
         // Apply work directory filter if specified
         if (workDirFilter && !workDir.includes(workDirFilter)) {
@@ -103,7 +175,7 @@ export class ClaudeReader extends BaseAgentReader {
             await fs.access(sessionPath);
             additionalContext = {
               projectDir: dir.name,
-              workDir: this.decodeProjectPath(dir.name)
+              workDir: await this.decodeProjectPath(dir.name)
             };
             break;
           } catch {

@@ -12,6 +12,58 @@ import { formatResults, formatResultsJSON } from './lib/format.js';
 import { listSessions, formatSessionList, formatSessionListJSON } from './lib/session-list.js';
 import type { AgentType, MessageRole, SearchOptions, OutputMode } from './types.js';
 
+/**
+ * Parse human-friendly date strings into Date objects
+ * Supports: ISO dates, "today", "yesterday", "N days/hours/weeks/months ago", "last week/month"
+ */
+function parseDate(input: string): Date {
+  // Try ISO / native date parsing first
+  const iso = new Date(input);
+  if (!isNaN(iso.getTime())) return iso;
+
+  const now = new Date();
+  const lower = input.toLowerCase().trim();
+
+  if (lower === 'today') {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  if (lower === 'yesterday') {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  // "N days/hours/weeks/months ago"
+  const agoMatch = lower.match(/^(\d+)\s+(day|hour|week|month)s?\s+ago$/);
+  if (agoMatch) {
+    const n = parseInt(agoMatch[1], 10);
+    const unit = agoMatch[2];
+    const d = new Date(now);
+    switch (unit) {
+      case 'day': d.setDate(d.getDate() - n); break;
+      case 'hour': d.setHours(d.getHours() - n); break;
+      case 'week': d.setDate(d.getDate() - n * 7); break;
+      case 'month': d.setMonth(d.getMonth() - n); break;
+    }
+    return d;
+  }
+
+  if (lower === 'last week') {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 7);
+    return d;
+  }
+  if (lower === 'last month') {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  }
+
+  throw new Error(
+    `Unable to parse date: "${input}". Use ISO format (2024-01-01), or relative ("yesterday", "3 days ago", "last week").`
+  );
+}
+
 const program = new Command();
 
 program
@@ -32,6 +84,9 @@ program
   .option('--snippet-size <chars>', 'Characters around match in snippet mode', '200')
   .option('--max-content-length <chars>', 'Max chars per message (0 for unlimited)', '500')
   .option('--max-tokens <tokens>', 'Maximum total tokens (approximate)')
+  .option('--literal', 'Treat query as literal text (disable regex)')
+  .option('--since <date>', 'Only include sessions after date (ISO, "yesterday", "3 days ago")')
+  .option('--before <date>', 'Only include sessions before date (ISO, "yesterday", "3 days ago")')
   .option('--list-sessions', 'List all sessions instead of searching (no query needed)')
   .parse();
 
@@ -146,6 +201,26 @@ async function main() {
       }
     }
 
+    // Parse date filters
+    let since: Date | undefined;
+    let before: Date | undefined;
+    if (options.since) {
+      try {
+        since = parseDate(options.since);
+      } catch (e) {
+        console.error(`Error: ${(e as Error).message}`);
+        process.exit(1);
+      }
+    }
+    if (options.before) {
+      try {
+        before = parseDate(options.before);
+      } catch (e) {
+        console.error(`Error: ${(e as Error).message}`);
+        process.exit(1);
+      }
+    }
+
     // Build search options
     const searchOptions: SearchOptions = {
       query: options.query,
@@ -155,10 +230,13 @@ async function main() {
       workDirFilter: options.workDir,
       limit: limit > 0 ? limit : undefined,
       caseInsensitive: true,
+      literal: options.literal || false,
       outputMode,
       snippetSize,
       maxContentLength: maxContentLength,
-      maxTokens
+      maxTokens,
+      since,
+      before
     };
 
     // Execute search

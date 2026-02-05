@@ -34,6 +34,11 @@ npx openskills install Uzair-akrum/agent-chat-search --global
 npx openskills sync
 ```
 
+After install, run the one-time setup:
+```bash
+cd ~/.claude/skills/agent-chat-search && npm install && npm run build
+```
+
 Then tell your agent: "Use the agent-chat-search skill to find my recent chat about authentication"
 
 #### Option 2: Via Vercel Skills
@@ -49,12 +54,11 @@ npx skills add Uzair-akrum/agent-chat-search
 git clone https://github.com/Uzair-akrum/agent-chat-search.git
 cd agent-chat-search
 
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
+# Install runtime dependencies
+npm install --production
 ```
+
+The compiled `dist/` is included in the repo, so no build step is needed. For development, run `npm install` (without `--production`) and `npm run build`.
 
 ### Basic Usage
 

@@ -44,7 +44,10 @@ export async function searchAgents(options: SearchOptions): Promise<SearchResult
       options.role,
       options.workDirFilter,
       options.contextLines || 0,
-      snippetConfig
+      snippetConfig,
+      options.literal,
+      options.since,
+      options.before
     )
   );
 
@@ -88,11 +91,10 @@ export async function searchAgents(options: SearchOptions): Promise<SearchResult
     }
   }
 
-  // Count total sessions searched
+  // Get session count tracked during search (no second scan needed)
   let totalSessions = 0;
   for (const reader of readers) {
-    const sessions = await reader.findSessions(options.workDirFilter);
-    totalSessions += sessions.length;
+    totalSessions += reader.getLastSearchedSessions();
   }
 
   return {

@@ -4,15 +4,27 @@
 
 import type { AgentType, Session, Message, SearchMatch, MessageRole, SnippetConfig, TruncationMetadata } from '../types.js';
 import { extractTextContent } from '../lib/content.js';
-import { 
-  extractMultiMatchSnippet, 
-  applyContentLimit, 
+import {
+  extractMultiMatchSnippet,
+  applyContentLimit,
   generateSessionSummary,
-  DEFAULT_SNIPPET_CONFIG 
+  DEFAULT_SNIPPET_CONFIG
 } from '../lib/snippet.js';
+
+/**
+ * Escape special regex characters for literal string matching
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export abstract class BaseAgentReader {
   abstract agentType: AgentType;
+  protected lastSearchedSessions: number = 0;
+
+  getLastSearchedSessions(): number {
+    return this.lastSearchedSessions;
+  }
 
   /**
    * Return the base directory where sessions are stored
@@ -32,28 +44,52 @@ export abstract class BaseAgentReader {
 
   /**
    * Search through all messages matching the query
-   * @param query Search query (regex pattern)
+   * @param query Search query (regex pattern or literal string)
    * @param role Optional filter by message role
    * @param workDirFilter Optional filter by work directory
    * @param contextLines Number of context lines before/after match
    * @param snippetConfig Configuration for snippet extraction
+   * @param literal If true, treat query as a literal string (escape regex metacharacters)
+   * @param since Only include messages from sessions after this date
+   * @param before Only include messages from sessions before this date
    */
   async searchMessages(
     query: string,
     role?: MessageRole,
     workDirFilter?: string,
     contextLines: number = 0,
-    snippetConfig?: SnippetConfig
+    snippetConfig?: SnippetConfig,
+    literal?: boolean,
+    since?: Date,
+    before?: Date
   ): Promise<SearchMatch[]> {
-    const sessions = await this.findSessions(workDirFilter);
+    let sessions = await this.findSessions(workDirFilter);
+    this.lastSearchedSessions = sessions.length;
     const matches: SearchMatch[] = [];
+
+    // Filter sessions by date range
+    if (since) {
+      sessions = sessions.filter(s => s.timestamp >= since);
+    }
+    if (before) {
+      sessions = sessions.filter(s => s.timestamp <= before);
+    }
 
     // Merge with default config
     const config = { ...DEFAULT_SNIPPET_CONFIG, ...snippetConfig };
 
-    // Create regex from query - use global flag to find all matches
-    const flags = 'gi'; // Global, case insensitive
-    const regex = new RegExp(query, flags);
+    // Create regex from query - escape if literal mode
+    const pattern = literal ? escapeRegex(query) : query;
+    const flags = 'gi';
+    let regex: RegExp;
+    try {
+      regex = new RegExp(pattern, flags);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new Error(
+        `Invalid regex pattern "${query}": ${msg}. Use --literal for plain text search.`
+      );
+    }
 
     for (const session of sessions) {
       const messages = session.messages;

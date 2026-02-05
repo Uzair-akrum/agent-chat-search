@@ -82,10 +82,13 @@ export interface SearchOptions {
   workDirFilter?: string;
   limit?: number;
   caseInsensitive?: boolean;
+  literal?: boolean;
   outputMode?: OutputMode;
   snippetSize?: number;
   maxContentLength?: number;
   maxTokens?: number;
+  since?: Date;
+  before?: Date;
 }
 
 export interface SearchResult {
