@@ -19,6 +19,31 @@ A unified search capability across multiple CLI coding agent chat histories. Sto
 
 ### Installation
 
+#### Option 1: Via OpenSkills (Recommended for Agent Use)
+
+OpenSkills works with Claude Code, Cursor, Windsurf, Aider, and any agent that reads `AGENTS.md`:
+
+```bash
+# Install the skill
+npx openskills install Uzair-akrum/agent-chat-search
+
+# Or install globally for all projects
+npx openskills install Uzair-akrum/agent-chat-search --global
+
+# Sync with your AGENTS.md
+npx openskills sync
+```
+
+Then tell your agent: "Use the agent-chat-search skill to find my recent chat about authentication"
+
+#### Option 2: Via Vercel Skills
+
+```bash
+npx skills add Uzair-akrum/agent-chat-search
+```
+
+#### Option 3: Manual Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Uzair-akrum/agent-chat-search.git
@@ -43,6 +68,24 @@ npx tsx src/search.ts --query "authentication" --all
 # List recent sessions
 npm start -- --list-sessions --all --limit 20
 ```
+
+### Using with AI Agents (OpenSkills)
+
+Once installed via OpenSkills, AI agents can automatically use this skill. Simply ask:
+
+> "Search my chat history for the authentication code we discussed last week"
+
+The agent will:
+1. Detect the `agent-chat-search` skill is available
+2. Run: `npx openskills read agent-chat-search`
+3. Execute the search across your Claude Code and Kimi sessions
+4. Present the results
+
+**Example agent interactions:**
+- "Find my recent chat about API error handling"
+- "List my Kimi sessions from yesterday"
+- "Search for that React component we built in Claude"
+- "What did I discuss about database migration?"
 
 ## 📖 Usage Examples
 
