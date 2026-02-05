@@ -19,47 +19,43 @@ A unified search capability across multiple CLI coding agent chat histories. Sto
 
 ### Installation
 
-#### Option 1: Via OpenSkills (Recommended for Agent Use)
+#### Option 1: One-line Install (Recommended)
 
-OpenSkills works with Claude Code, Cursor, Windsurf, Aider, and any agent that reads `AGENTS.md`:
+Works with **Claude Code**, **Kimi**, and any AI agent:
 
 ```bash
-# Install the skill
-npx openskills install Uzair-akrum/agent-chat-search
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/install.sh | bash
+```
 
-# Or install globally for all projects
+This automatically installs to:
+- `~/.claude/skills/agent-chat-search/` (for Claude Code)
+- `~/.kimi/skills/agent-chat-search/` (for Kimi)
+
+Then tell your agent: **"Search my chat history for [topic]"**
+
+#### Option 2: Via OpenSkills
+
+```bash
 npx openskills install Uzair-akrum/agent-chat-search --global
-
-# Sync with your AGENTS.md
-npx openskills sync
 ```
 
-After install, run the one-time setup:
-
-```bash
-cd ~/.claude/skills/agent-chat-search && npm install && npm run build
-```
-
-Then tell your agent: "Use the agent-chat-search skill to find my recent chat about authentication"
-
-#### Option 2: Via Vercel Skills
-
-```bash
-npx skills add Uzair-akrum/agent-chat-search
-```
+Note: OpenSkills currently only installs to `~/.claude/skills/`. Kimi users should use Option 1.
 
 #### Option 3: Manual Installation
 
 ```bash
-# Clone the repository
+# Clone (pre-built files included, no build needed)
 git clone https://github.com/Uzair-akrum/agent-chat-search.git
-cd agent-chat-search
 
-# Install runtime dependencies
-npm install --production
+# Copy to your agent's skills directory
+# For Claude Code:
+mkdir -p ~/.claude/skills
+cp -r agent-chat-search ~/.claude/skills/
+
+# For Kimi:
+mkdir -p ~/.kimi/skills
+cp -r agent-chat-search ~/.kimi/skills/
 ```
-
-The compiled `dist/` is included in the repo, so no build step is needed. For development, run `npm install` (without `--production`) and `npm run build`.
 
 ### Basic Usage
 
