@@ -1,11 +1,11 @@
 ---
 name: agent-chat-search
-description: Search through chat sessions across multiple AI coding agents (Claude Code, Kimi). Find past conversations, code snippets, and discussions.
+description: Search through chat sessions across multiple AI coding agents (Claude Code, Kimi, Codex). Find past conversations, code snippets, and discussions.
 ---
 
 # Agent Chat Search
 
-Search across your AI coding agent chat histories (Claude Code, Kimi) to find past conversations, code snippets, and discussions.
+Search across your AI coding agent chat histories (Claude Code, Kimi, Codex) to find past conversations, code snippets, and discussions.
 
 ## Setup (one-time)
 
@@ -40,6 +40,7 @@ node {baseDir}/dist/search.js --query "bug" --all --since "2025-01-01" --before 
 ```bash
 node {baseDir}/dist/search.js --query "refactor" --agent claude
 node {baseDir}/dist/search.js --query "bug fix" --agent kimi
+node {baseDir}/dist/search.js --query "session cache" --agent codex
 ```
 
 **List recent sessions:**
@@ -62,7 +63,7 @@ node {baseDir}/dist/search.js --list-sessions --all --json
 | ------------------------------ | --------------------------------------------------------- | --------- |
 | `-q, --query <query>`          | Search query string (required unless `--list-sessions`)   | —         |
 | `--all`                        | Search across all agents                                  | —         |
-| `-a, --agent <agents>`         | Comma-separated agent names (`claude`,`kimi`)             | `kimi`    |
+| `-a, --agent <agents>`         | Comma-separated agent names (`claude`,`kimi`,`codex`)     | `kimi`    |
 | `--literal`                    | Treat query as literal text (disable regex)               | `false`   |
 | `--since <date>`               | Only sessions after date (ISO, "yesterday", "3 days ago") | —         |
 | `--before <date>`              | Only sessions before date                                 | —         |
@@ -79,7 +80,7 @@ node {baseDir}/dist/search.js --list-sessions --all --json
 
 ## Tips
 
-- Use `--all` to search both Claude Code and Kimi sessions at once
+- Use `--all` to search Claude Code, Kimi, and Codex sessions at once
 - Use `--literal` when searching for code with special regex characters (e.g. brackets, dots)
 - Use `--since "yesterday"` or `--since "3 days ago"` to narrow results to recent sessions
 - Use `--json` when you need to parse results programmatically

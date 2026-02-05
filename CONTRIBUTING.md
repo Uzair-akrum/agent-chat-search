@@ -25,7 +25,8 @@ src/
 ├── readers/           # Agent-specific readers
 │   ├── base.ts       # Abstract base class
 │   ├── claude.ts     # Claude Code reader
-│   └── kimi.ts       # Kimi reader
+│   ├── kimi.ts       # Kimi reader
+│   └── codex.ts      # Codex reader
 └── lib/              # Shared utilities
     ├── search.ts     # Search orchestration
     ├── format.ts     # Output formatting
@@ -35,9 +36,9 @@ src/
 
 ## Adding a New Agent
 
-To add support for a new AI coding agent (e.g., Codex CLI):
+To add support for a new AI coding agent (e.g., OpenCode):
 
-1. **Create reader file** `src/readers/codex.ts`:
+1. **Create reader file** `src/readers/newagent.ts`:
 
 ```typescript
 import { join } from 'path';
@@ -45,11 +46,11 @@ import { homedir } from 'os';
 import { BaseAgentReader } from './base.js';
 import type { Session, Message, AgentType } from '../types.js';
 
-export class CodexReader extends BaseAgentReader {
-  agentType: AgentType = 'codex';
+export class NewAgentReader extends BaseAgentReader {
+  agentType: AgentType = 'newagent';
 
   getSessionsDir(): string {
-    return join(homedir(), '.codex', 'sessions');
+    return join(homedir(), '.newagent', 'sessions');
   }
 
   async findSessions(workDirFilter?: string): Promise<Session[]> {
@@ -67,21 +68,21 @@ export class CodexReader extends BaseAgentReader {
 2. **Update types** in `src/types.ts`:
 
 ```typescript
-export type AgentType = 'claude' | 'kimi' | 'codex';
+export type AgentType = 'claude' | 'kimi' | 'codex' | 'newagent';
 ```
 
 3. **Register reader** in `src/search.ts`:
 
 ```typescript
-import { CodexReader } from './readers/codex.js';
+import { NewAgentReader } from './readers/newagent.js';
 
 // In main function:
-if (options.agents.includes('codex')) {
-  readers.push(new CodexReader());
+if (options.agents.includes('newagent')) {
+  readers.push(new NewAgentReader());
 }
 ```
 
-4. **Update CLI help** to include 'codex' as valid agent
+4. **Update CLI help** to include 'newagent' as valid agent
 
 5. **Add tests** and update documentation
 
@@ -127,6 +128,7 @@ npm start -- --query "test" --all --json
 # Test with different agents
 npm start -- --query "test" --agent claude --limit 3
 npm start -- --query "test" --agent kimi --limit 3
+npm start -- --query "test" --agent codex --limit 3
 ```
 
 ## Submitting Changes

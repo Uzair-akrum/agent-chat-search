@@ -1,6 +1,6 @@
 # Agent Chat Search 🔍
 
-> Search through chat sessions across multiple AI coding agents (Claude Code, Kimi)
+> Search through chat sessions across multiple AI coding agents (Claude Code, Kimi, Codex)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -8,12 +8,12 @@ A unified search capability across multiple CLI coding agent chat histories. Sto
 
 ## ✨ Features
 
-- **🔍 Universal Search** - Search across Claude Code and Kimi sessions in one command
+- **🔍 Universal Search** - Search across Claude Code, Kimi, and Codex sessions in one command
 - **📋 Session Browser** - List all sessions with topic previews
 - **✂️ Smart Snippets** - Extracts relevant context around matches (no context window overflow)
 - **💰 Token Budget** - Limit output size to prevent context exhaustion
 - **📊 Session Metadata** - See message count, timestamps, and first message preview
-- **🔀 Cross-Agent** - Search Claude and Kimi simultaneously
+- **🔀 Cross-Agent** - Search Claude, Kimi, and Codex simultaneously
 
 ## 🚀 Quick Start
 
@@ -28,8 +28,10 @@ curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/
 ```
 
 This automatically installs to:
+
 - `~/.claude/skills/agent-chat-search/` (for Claude Code)
 - `~/.kimi/skills/agent-chat-search/` (for Kimi)
+- `~/.codex/skills/agent-chat-search/` (for Codex)
 
 Then tell your agent: **"Search my chat history for [topic]"**
 
@@ -39,7 +41,7 @@ Then tell your agent: **"Search my chat history for [topic]"**
 npx openskills install Uzair-akrum/agent-chat-search --global
 ```
 
-Note: OpenSkills currently only installs to `~/.claude/skills/`. Kimi users should use Option 1.
+Note: OpenSkills currently only installs to `~/.claude/skills/`. Kimi and Codex users should use Option 1.
 
 #### Option 3: Manual Installation
 
@@ -55,6 +57,10 @@ cp -r agent-chat-search ~/.claude/skills/
 # For Kimi:
 mkdir -p ~/.kimi/skills
 cp -r agent-chat-search ~/.kimi/skills/
+
+# For Codex:
+mkdir -p ~/.codex/skills
+cp -r agent-chat-search ~/.codex/skills/
 ```
 
 ### Basic Usage
@@ -80,7 +86,7 @@ The agent will:
 
 1. Detect the `agent-chat-search` skill is available
 2. Run: `npx openskills read agent-chat-search`
-3. Execute the search across your Claude Code and Kimi sessions
+3. Execute the search across your Claude Code, Kimi, and Codex sessions
 4. Present the results
 
 **Example agent interactions:**
@@ -103,6 +109,9 @@ npm start -- --query "refactor" --agent claude
 
 # Search only Kimi sessions
 npm start -- --query "bug fix" --agent kimi
+
+# Search only Codex sessions
+npm start -- --query "cleanup" --agent codex
 
 # Show 3 context lines before/after matches
 npm start -- --query "deploy" --all --context 3
@@ -148,7 +157,7 @@ npm start -- --query "implement" --all --max-tokens 2000
 ```
 Options:
   -q, --query <query>           Search query string (required unless --list-sessions)
-  -a, --agent <agents>          Comma-separated agent names (claude,kimi) [default: kimi]
+  -a, --agent <agents>          Comma-separated agent names (claude,kimi,codex) [default: kimi]
   --all                         Search across all agents
   --list-sessions               List all sessions instead of searching
   -r, --role <role>             Filter by message role (user|assistant|tool)
@@ -174,6 +183,7 @@ src/
 │   ├── base.ts           # Abstract reader (snippet extraction)
 │   ├── claude.ts         # Claude Code adapter
 │   ├── kimi.ts           # Kimi adapter
+│   ├── codex.ts          # Codex adapter
 │   └── index.ts          # Exports
 └── lib/
     ├── jsonl.ts          # JSONL parsing
@@ -198,7 +208,7 @@ src/
 | ----------- | --------------------- | ------------ |
 | Claude Code | `~/.claude/projects/` | ✅ Supported |
 | Kimi        | `~/.kimi/sessions/`   | ✅ Supported |
-| Codex CLI   | -                     | 🚧 Planned   |
+| Codex CLI   | `~/.codex/sessions/`  | ✅ Supported |
 | OpenCode    | -                     | 🚧 Planned   |
 | Cursor      | -                     | 🚧 Planned   |
 
@@ -286,7 +296,7 @@ Position: assistant message 15/42 (36% through session)
 - [x] Snippet extraction
 - [x] Token budget management
 - [x] Session listing mode
-- [ ] Support for Codex CLI
+- [x] Support for Codex CLI
 - [ ] Support for OpenCode
 - [ ] Semantic search (embeddings)
 - [ ] Session indexing for faster search

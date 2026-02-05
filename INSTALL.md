@@ -57,6 +57,7 @@ agent-search --list-sessions --all --limit 5
 
 # Should search
 agent-search --query "test" --agent kimi --limit 3
+agent-search --query "test" --agent codex --limit 3
 ```
 
 ## Post-Installation Setup
@@ -78,6 +79,16 @@ Sessions are automatically read from:
 ```
 
 Or from the directory specified by `KIMI_SHARE_DIR` environment variable.
+
+### For Codex Users
+
+Sessions are automatically read from:
+
+```
+~/.codex/sessions/
+```
+
+Or from the directory specified by `CODEX_HOME` (expects sessions at `$CODEX_HOME/sessions/`).
 
 ## Troubleshooting
 
@@ -111,6 +122,9 @@ chmod -R u+r ~/.claude/projects/
 
 # Fix permissions for Kimi
 chmod -R u+r ~/.kimi/sessions/
+
+# Fix permissions for Codex
+chmod -R u+r ~/.codex/sessions/
 ```
 
 ## Uninstallation

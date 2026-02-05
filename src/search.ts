@@ -92,7 +92,7 @@ program
   .option('-q, --query <query>', 'Search query string')
   .option(
     '-a, --agent <agents>',
-    'Comma-separated agent names (claude,kimi)',
+    'Comma-separated agent names (claude,kimi,codex)',
     'kimi',
   )
   .option('--all', 'Search across all agents')
@@ -164,16 +164,16 @@ async function main() {
   // Parse agents
   let agents: AgentType[];
   if (options.all) {
-    agents = ['claude', 'kimi'];
+    agents = ['claude', 'kimi', 'codex'];
   } else {
     const agentList = options.agent.split(',').map((a: string) => a.trim());
     agents = agentList.filter(
-      (a: string) => a === 'claude' || a === 'kimi',
+      (a: string) => a === 'claude' || a === 'kimi' || a === 'codex',
     ) as AgentType[];
 
     if (agents.length === 0) {
       console.error(
-        'Error: No valid agents specified. Valid agents: claude, kimi',
+        'Error: No valid agents specified. Valid agents: claude, kimi, codex',
       );
       process.exit(1);
     }

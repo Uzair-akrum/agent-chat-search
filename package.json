@@ -1,7 +1,7 @@
 {
   "name": "agent-chat-search",
   "version": "1.2.1",
-  "description": "Search through chat sessions across multiple AI coding agents (Claude Code, Kimi)",
+  "description": "Search through chat sessions across multiple AI coding agents (Claude Code, Kimi, Codex)",
   "type": "module",
   "main": "dist/search.js",
   "bin": {
@@ -23,6 +23,7 @@
   "keywords": [
     "claude",
     "kimi",
+    "codex",
     "ai",
     "agent",
     "search",

@@ -7,6 +7,7 @@ set -e
 REPO="Uzair-akrum/agent-chat-search"
 INSTALL_DIR_CLaude="$HOME/.claude/skills/agent-chat-search"
 INSTALL_DIR_KIMI="$HOME/.kimi/skills/agent-chat-search"
+INSTALL_DIR_CODEX="$HOME/.codex/skills/agent-chat-search"
 TMP_DIR=$(mktemp -d)
 
 echo "🔍 Installing Agent Chat Search..."
@@ -15,9 +16,10 @@ echo "🔍 Installing Agent Chat Search..."
 TARGETS=""
 [ -d "$HOME/.claude" ] && TARGETS="$TARGETS claude"
 [ -d "$HOME/.kimi" ] && TARGETS="$TARGETS kimi"
+[ -d "$HOME/.codex" ] && TARGETS="$TARGETS codex"
 
 if [ -z "$TARGETS" ]; then
-    echo "⚠️  Neither ~/.claude nor ~/.kimi found."
+    echo "⚠️  None of ~/.claude, ~/.kimi, or ~/.codex were found."
     echo "Installing to ~/.claude/skills/ (for Claude Code)"
     mkdir -p "$HOME/.claude/skills"
     TARGETS="claude"
@@ -41,6 +43,9 @@ for target in $TARGETS; do
             ;;
         kimi)
             INSTALL_DIR="$INSTALL_DIR_KIMI"
+            ;;
+        codex)
+            INSTALL_DIR="$INSTALL_DIR_CODEX"
             ;;
     esac
     
@@ -71,5 +76,6 @@ echo ""
 echo "Usage examples:"
 echo "  cd ~/.claude/skills/agent-chat-search && node dist/search.js --query 'auth' --all"
 echo "  cd ~/.kimi/skills/agent-chat-search && node dist/search.js --list-sessions --all"
+echo "  cd ~/.codex/skills/agent-chat-search && node dist/search.js --query 'refactor' --agent codex"
 echo ""
 echo "Or tell your AI agent: 'Search my chat history for authentication'"

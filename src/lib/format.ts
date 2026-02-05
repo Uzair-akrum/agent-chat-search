@@ -138,6 +138,8 @@ function capitalizeAgentType(agentType: string): string {
       return 'Claude Code';
     case 'kimi':
       return 'Kimi';
+    case 'codex':
+      return 'Codex';
     default:
       return agentType.charAt(0).toUpperCase() + agentType.slice(1);
   }
