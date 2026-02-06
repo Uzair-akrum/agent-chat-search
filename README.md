@@ -36,6 +36,18 @@ This automatically installs to:
 
 Then tell your agent: **"Search my chat history for [topic]"**
 
+#### One-line Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash
+```
+
+For CI or non-interactive shells:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash -s -- --yes
+```
+
 #### Option 2: Via OpenSkills
 
 ```bash

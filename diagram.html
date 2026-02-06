@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Chat Search - Diagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0D1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding: 40px;
+  }
+
+  .canvas {
+    width: 1200px;
+    min-height: 700px;
+    background: #0D1117;
+    border-radius: 24px;
+    padding: 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle grid background */
+  .canvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  /* Top glow */
+  .canvas::after {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(99, 179, 237, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 44px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #F0F6FC;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .header h1 span {
+    background: linear-gradient(135deg, #58A6FF, #A78BFA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: #8B949E;
+    font-weight: 400;
+  }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+    justify-content: center;
+  }
+
+  /* === LEFT: Query Panel === */
+  .query-panel {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  .query-box {
+    background: #161B22;
+    border: 1px solid #30363D;
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+  }
+
+  .query-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #58A6FF;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .query-label .icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .query-input {
+    background: #0D1117;
+    border: 1px solid #30363D;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #C9D1D9;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .query-input .highlight {
+    color: #7EE787;
+  }
+
+  .params {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .param {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .param-key {
+    color: #A78BFA;
+    min-width: 64px;
+  }
+
+  .param-val {
+    color: #8B949E;
+  }
+
+  .param-badge {
+    background: rgba(88, 166, 255, 0.1);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    color: #58A6FF;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* === CENTER: Arrow connectors === */
+  .arrow-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .arrow-line {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .arrow-line svg {
+    display: block;
+  }
+
+  /* === MIDDLE: Engine === */
+  .engine-panel {
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .engine-box {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.08), rgba(167, 139, 250, 0.08));
+    border: 1px solid rgba(88, 166, 255, 0.25);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    width: 100%;
+    position: relative;
+  }
+
+  .engine-box::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 20px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.4), rgba(167, 139, 250, 0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .engine-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    background: linear-gradient(135deg, #58A6FF, #A78BFA);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .engine-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #F0F6FC;
+    margin-bottom: 4px;
+  }
+
+  .engine-subtitle {
+    font-size: 11px;
+    color: #8B949E;
+    margin-bottom: 16px;
+  }
+
+  .engine-features {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .engine-feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #C9D1D9;
+  }
+
+  .engine-feature .dot {
+    width: 5px;
+    height: 5px;
+    background: #58A6FF;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* === RIGHT: Agent Sources === */
+  .agents-panel {
+    width: 280px;
+    flex-shrink: 0;
+  }
+
+  .agents-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agent-card {
+    background: #161B22;
+    border: 1px solid #30363D;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+  }
+
+  .agent-card .agent-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .agent-card.claude .agent-icon { background: rgba(232, 121, 73, 0.15); border: 1px solid rgba(232, 121, 73, 0.3); }
+  .agent-card.kimi .agent-icon { background: rgba(126, 231, 135, 0.15); border: 1px solid rgba(126, 231, 135, 0.3); }
+  .agent-card.codex .agent-icon { background: rgba(88, 166, 255, 0.15); border: 1px solid rgba(88, 166, 255, 0.3); }
+  .agent-card.opencode .agent-icon { background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.3); }
+
+  .agent-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .agent-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #F0F6FC;
+    margin-bottom: 2px;
+  }
+
+  .agent-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: #6E7681;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .agent-format {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #8B949E;
+    background: rgba(139, 148, 158, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* === BOTTOM: Results === */
+  .results-section {
+    margin-top: 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .results-arrow {
+    color: #30363D;
+  }
+
+  .results-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #7EE787;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .result-card {
+    background: #161B22;
+    border: 1px solid #30363D;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .result-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .result-agent-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .result-agent-badge.claude { background: rgba(232, 121, 73, 0.15); color: #E87949; }
+  .result-agent-badge.kimi { background: rgba(126, 231, 135, 0.15); color: #7EE787; }
+  .result-agent-badge.codex { background: rgba(88, 166, 255, 0.15); color: #58A6FF; }
+
+  .result-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #6E7681;
+  }
+
+  .result-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: #8B949E;
+    line-height: 1.5;
+  }
+
+  .result-content .match {
+    color: #F0F6FC;
+    background: rgba(126, 231, 135, 0.15);
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+
+  .result-session {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #6E7681;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #58A6FF;
+    background: rgba(88, 166, 255, 0.08);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    padding: 8px 20px;
+    border-radius: 99px;
+  }
+
+  .footer-badge code {
+    color: #C9D1D9;
+    font-weight: 500;
+  }
+
+  .pipe-vert {
+    width: 1px;
+    height: 20px;
+    background: linear-gradient(to bottom, #30363D, #58A6FF55);
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- Header -->
+  <div class="header">
+    <h1><span>agent-chat-search</span></h1>
+    <p>Search across all your AI coding agent conversations from one place</p>
+  </div>
+
+  <!-- Main Flow -->
+  <div class="flow">
+
+    <!-- LEFT: Query -->
+    <div class="query-panel">
+      <div class="query-box">
+        <div class="query-label">
+          <div class="icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58A6FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          YOUR QUERY
+        </div>
+        <div class="query-input">
+          <span class="highlight">"Did we work on auth in past 3 days"</span>
+        </div>
+        <div class="params">
+          <div class="param">
+            <span class="param-key">--agent</span>
+            <span class="param-badge">all</span>
+          </div>
+          <div class="param">
+            <span class="param-key">--role</span>
+            <span class="param-val">assistant</span>
+          </div>
+          <div class="param">
+            <span class="param-key">--since</span>
+            <span class="param-val">"3 days ago"</span>
+          </div>
+          <div class="param">
+            <span class="param-key">--context</span>
+            <span class="param-val">2</span>
+          </div>
+          <div class="param">
+            <span class="param-key">--json</span>
+            <span class="param-val"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow Left → Center -->
+    <div class="arrow-section">
+      <div class="arrow-line">
+        <svg width="60" height="24" viewBox="0 0 60 24">
+          <defs>
+            <linearGradient id="arrowGrad1" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#30363D"/>
+              <stop offset="100%" stop-color="#58A6FF"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="12" x2="50" y2="12" stroke="url(#arrowGrad1)" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <polygon points="48,7 58,12 48,17" fill="#58A6FF"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- CENTER: Search Engine -->
+    <div class="engine-panel">
+      <div class="engine-box">
+        <div class="engine-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+        </div>
+        <div class="engine-title">Search Engine</div>
+        <div class="engine-subtitle">Parallel cross-agent search</div>
+        <div class="engine-features">
+          <div class="engine-feature"><span class="dot"></span> Regex & literal matching</div>
+          <div class="engine-feature"><span class="dot"></span> Date range filtering</div>
+          <div class="engine-feature"><span class="dot"></span> Role-based filtering</div>
+          <div class="engine-feature"><span class="dot"></span> Context extraction</div>
+          <div class="engine-feature"><span class="dot"></span> Token budget control</div>
+          <div class="engine-feature"><span class="dot"></span> Snippet generation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow Center → Right -->
+    <div class="arrow-section">
+      <div class="arrow-line">
+        <svg width="60" height="80" viewBox="0 0 60 80">
+          <defs>
+            <linearGradient id="arrowGrad2" x1="1" y1="0" x2="0" y2="0">
+              <stop offset="0%" stop-color="#30363D"/>
+              <stop offset="100%" stop-color="#A78BFA"/>
+            </linearGradient>
+          </defs>
+          <!-- Multiple arrows fanning to agents -->
+          <line x1="0" y1="40" x2="50" y2="10" stroke="url(#arrowGrad2)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+          <line x1="0" y1="40" x2="50" y2="27" stroke="url(#arrowGrad2)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+          <line x1="0" y1="40" x2="50" y2="53" stroke="url(#arrowGrad2)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+          <line x1="0" y1="40" x2="50" y2="70" stroke="url(#arrowGrad2)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+          <polygon points="48,6 58,10 48,14" fill="#A78BFA" opacity="0.8"/>
+          <polygon points="48,23 58,27 48,31" fill="#A78BFA" opacity="0.8"/>
+          <polygon points="48,49 58,53 48,57" fill="#A78BFA" opacity="0.8"/>
+          <polygon points="48,66 58,70 48,74" fill="#A78BFA" opacity="0.8"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- RIGHT: Agent Sources -->
+    <div class="agents-panel">
+      <div class="agents-stack">
+        <div class="agent-card claude">
+          <div class="agent-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#E87949" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name">Claude Code</div>
+            <div class="agent-path">~/.claude/projects/</div>
+          </div>
+          <div class="agent-format">JSONL</div>
+        </div>
+
+        <div class="agent-card kimi">
+          <div class="agent-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" fill="#7EE787" opacity="0.7"/><circle cx="12" cy="12" r="3" fill="#7EE787"/></svg>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name">Kimi K2</div>
+            <div class="agent-path">~/.kimi/sessions/</div>
+          </div>
+          <div class="agent-format">JSONL</div>
+        </div>
+
+        <div class="agent-card codex">
+          <div class="agent-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#58A6FF" stroke-width="1.5"/><path d="M8 8h8M8 12h5M8 16h8" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name">Codex CLI</div>
+            <div class="agent-path">~/.codex/sessions/</div>
+          </div>
+          <div class="agent-format">JSONL</div>
+        </div>
+
+        <div class="agent-card opencode">
+          <div class="agent-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name">OpenCode</div>
+            <div class="agent-path">~/.local/share/opencode/</div>
+          </div>
+          <div class="agent-format">JSON</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Down arrow to results -->
+  <div style="text-align:center; margin-top: 20px;">
+    <svg width="24" height="36" viewBox="0 0 24 36">
+      <defs>
+        <linearGradient id="downGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#30363D"/>
+          <stop offset="100%" stop-color="#7EE787"/>
+        </linearGradient>
+      </defs>
+      <line x1="12" y1="0" x2="12" y2="28" stroke="url(#downGrad)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <polygon points="7,26 12,35 17,26" fill="#7EE787"/>
+    </svg>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section">
+    <div class="results-header">
+      <div class="results-label">Aggregated Results  ·  Sorted by Recency  ·  3 matches found</div>
+    </div>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-meta">
+          <span class="result-agent-badge claude">Claude</span>
+          <span class="result-time">2 hours ago</span>
+        </div>
+        <div class="result-content">
+          ...set up the <span class="match">auth middleware</span> using JWT tokens for the API routes. Here's the implementation...
+        </div>
+        <div class="result-session">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6E7681" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          ~/repos/my-api
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-meta">
+          <span class="result-agent-badge kimi">Kimi</span>
+          <span class="result-time">yesterday</span>
+        </div>
+        <div class="result-content">
+          ...the <span class="match">auth middleware</span> should validate the session cookie before passing control to the next handler...
+        </div>
+        <div class="result-session">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6E7681" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          ~/repos/web-app
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-meta">
+          <span class="result-agent-badge codex">Codex</span>
+          <span class="result-time">3 days ago</span>
+        </div>
+        <div class="result-content">
+          ...refactored the <span class="match">auth middleware</span> to support both API keys and OAuth2 bearer tokens...
+        </div>
+        <div class="result-session">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6E7681" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          ~/repos/microservices
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58A6FF" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+      <code>curl -fsSL .../install.sh | bash</code>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

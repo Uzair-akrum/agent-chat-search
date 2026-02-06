@@ -44,6 +44,19 @@ agent-search --query "test" --all
 npx agent-chat-search --query "authentication" --all
 ```
 
+## Option 4: One-line Skill Install/Uninstall
+
+```bash
+# Install skill files into supported agent directories
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/install.sh | bash
+
+# Uninstall from supported agent directories (interactive confirm)
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash
+
+# Non-interactive uninstall
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash -s -- --yes
+```
+
 ## Verification
 
 Test your installation:
@@ -130,7 +143,10 @@ chmod -R u+r ~/.codex/sessions/
 ## Uninstallation
 
 ```bash
-# If installed globally
+# If installed with one-line installer
+curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash
+
+# If installed globally via npm
 npm uninstall -g agent-chat-search
 
 # If linked locally
