@@ -48,14 +48,6 @@ For CI or non-interactive shells:
 curl -fsSL https://raw.githubusercontent.com/Uzair-akrum/agent-chat-search/main/uninstall.sh | bash -s -- --yes
 ```
 
-#### Option 2: Via OpenSkills
-
-```bash
-npx openskills install Uzair-akrum/agent-chat-search --global
-```
-
-Note: OpenSkills currently only installs to `~/.claude/skills/`. Kimi and Codex users should use Option 1.
-
 #### Option 3: Manual Installation
 
 ```bash
@@ -89,18 +81,13 @@ npx tsx src/search.ts --query "authentication" --all
 npm start -- --list-sessions --all --limit 20
 ```
 
-### Using with AI Agents (OpenSkills)
+### Using with AI Agents
 
-Once installed via OpenSkills, AI agents can automatically use this skill. Simply ask:
+Once installed, AI agents can automatically use this skill. Simply ask:
 
 > "Search my chat history for the authentication code we discussed last week"
 
-The agent will:
-
-1. Detect the `agent-chat-search` skill is available
-2. Run: `npx openskills read agent-chat-search`
-3. Execute the search across your Claude Code, Kimi, Codex, and OpenCode sessions
-4. Present the results
+The agent will detect the `agent-chat-search` skill and execute the search across your Claude Code, Kimi, Codex, and OpenCode sessions.
 
 **Example agent interactions:**
 
