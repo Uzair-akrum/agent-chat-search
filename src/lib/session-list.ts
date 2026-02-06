@@ -4,7 +4,12 @@
  */
 
 import type { Session, AgentType } from '../types.js';
-import { ClaudeReader, KimiReader, CodexReader } from '../readers/index.js';
+import {
+  ClaudeReader,
+  KimiReader,
+  CodexReader,
+  OpenCodeReader,
+} from '../readers/index.js';
 
 export interface SessionInfo {
   sessionId: string;
@@ -63,6 +68,10 @@ export async function listSessions(
 
   if (agents.includes('codex')) {
     readers.push(new CodexReader());
+  }
+
+  if (agents.includes('opencode')) {
+    readers.push(new OpenCodeReader());
   }
 
   // Collect all sessions
@@ -161,6 +170,8 @@ function capitalizeAgentType(agentType: string): string {
       return 'Kimi';
     case 'codex':
       return 'Codex';
+    case 'opencode':
+      return 'OpenCode';
     default:
       return agentType.charAt(0).toUpperCase() + agentType.slice(1);
   }

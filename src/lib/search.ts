@@ -8,7 +8,12 @@ import type {
   SearchOptions,
   SnippetConfig,
 } from '../types.js';
-import { ClaudeReader, KimiReader, CodexReader } from '../readers/index.js';
+import {
+  ClaudeReader,
+  KimiReader,
+  CodexReader,
+  OpenCodeReader,
+} from '../readers/index.js';
 import {
   enforceTokenBudget,
   estimateTokens,
@@ -52,6 +57,10 @@ export async function searchAgents(
 
   if (options.agents.includes('codex')) {
     readers.push(new CodexReader());
+  }
+
+  if (options.agents.includes('opencode')) {
+    readers.push(new OpenCodeReader());
   }
 
   // Build snippet configuration

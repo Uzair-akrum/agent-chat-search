@@ -8,6 +8,7 @@ REPO="Uzair-akrum/agent-chat-search"
 INSTALL_DIR_CLaude="$HOME/.claude/skills/agent-chat-search"
 INSTALL_DIR_KIMI="$HOME/.kimi/skills/agent-chat-search"
 INSTALL_DIR_CODEX="$HOME/.codex/skills/agent-chat-search"
+INSTALL_DIR_OPENCODE="$HOME/.local/share/opencode/skills/agent-chat-search"
 TMP_DIR=$(mktemp -d)
 
 echo "🔍 Installing Agent Chat Search..."
@@ -17,6 +18,7 @@ TARGETS=""
 [ -d "$HOME/.claude" ] && TARGETS="$TARGETS claude"
 [ -d "$HOME/.kimi" ] && TARGETS="$TARGETS kimi"
 [ -d "$HOME/.codex" ] && TARGETS="$TARGETS codex"
+[ -d "$HOME/.local/share/opencode" ] && TARGETS="$TARGETS opencode"
 
 if [ -z "$TARGETS" ]; then
     echo "⚠️  None of ~/.claude, ~/.kimi, or ~/.codex were found."
@@ -46,6 +48,9 @@ for target in $TARGETS; do
             ;;
         codex)
             INSTALL_DIR="$INSTALL_DIR_CODEX"
+            ;;
+        opencode)
+            INSTALL_DIR="$INSTALL_DIR_OPENCODE"
             ;;
     esac
     

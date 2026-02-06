@@ -2,7 +2,7 @@
  * Core type definitions for agent chat search
  */
 
-export type AgentType = 'claude' | 'kimi' | 'codex';
+export type AgentType = 'claude' | 'kimi' | 'codex' | 'opencode';
 
 export type MessageRole = 'user' | 'assistant' | 'tool';
 
