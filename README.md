@@ -179,6 +179,8 @@ Options:
 
 ## 🏗️ Architecture
 
+📊 **Interactive Architecture Diagram**: See [`diagram.html`](./diagram.html) for a visual overview of the system.
+
 ```
 src/
 ├── search.ts              # CLI entry point
